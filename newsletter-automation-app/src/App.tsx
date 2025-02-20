@@ -1,35 +1,26 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import React from 'react';
+import './App.css';
 
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div style={{ display: 'flex', width: '100%' }}>
+      <div className="left-menu" style={{ position: 'fixed', top: 0, left: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '20%', height: '100vh', backgroundColor: '#f0f0f0', padding: '10px' }}>
+        <button style={{ marginBottom: '10px' }} onClick={() => console.log('Regenerate Newsletter')}>
+          Regenerate Newsletter
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <button style={{ marginBottom: '10px' }} onClick={() => console.log('Fetch Newsletter Contents')}>
+          Fetch Newsletter Contents
+        </button>
+        <button style={{ marginBottom: '10px' }} onClick={() => console.log('Schedule Newsletter')}>
+          Schedule Newsletter
+        </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+      <div style={{ marginLeft: '20%', width: '80%', padding: '10px' }}>
+        {/* Empty section for future content */}
+      </div>
+    </div>
+  );
+};
 
-export default App
+export default App;
