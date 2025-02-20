@@ -29,10 +29,20 @@ const App: React.FC = () => {
     setTopic(inputTopic);
     setShowHtml(false); // Reset the toggle
 
-    // Generate temporary headlines
+    // THIS IS TEMPORARY
     const generatedHeadlines = Array.from({ length: inputNumHeadlines }, (_, i) => `${inputTopic} Headline ${i + 1}`);
     setHeadlines(generatedHeadlines);
 
+    switch (topic) {
+      case "AI Headlines":
+        // TODO(anish): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
+      case "Senior Housing News":
+        // TODO(tyler): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
+      case "For-Sale Listings":
+        // TODO(harris): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
+      default:
+        break
+    }
     // Generate HTML block
     const content = `<div>\n  <p>Date: ${inputDate}</p>\n  <p>Topic: ${inputTopic}</p>\n  <p>Number of Headlines: ${inputNumHeadlines}</p>\n  <ul>\n    ${generatedHeadlines.map(h => `<li>${h}</li>`).join('\n    ')}\n  </ul>\n</div>`;
     setHtmlContent(content);
