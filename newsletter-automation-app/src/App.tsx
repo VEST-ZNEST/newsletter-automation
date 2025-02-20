@@ -1,23 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 
 
 const App: React.FC = () => {
+  const [date, setDate] = useState('');
+
+  const handleGetHtmlBlock = async () => {
+    try {
+      const response = await fetch(`https://your-api-endpoint.com/get-html?date=${date}`);
+      const data = await response.json();
+      console.log('HTML Block:', data);
+    } catch (error) {
+      console.error('Error fetching HTML block:', error);
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', width: '100%' }}>
-      <div className="left-menu" style={{ position: 'fixed', top: 0, left: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '20%', height: '100vh', backgroundColor: '#f0f0f0', padding: '10px' }}>
-        <button style={{ marginBottom: '10px' }} onClick={() => console.log('Regenerate Newsletter')}>
-          Regenerate Newsletter
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100%' }}>
+      <div className="centered-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px' }}>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          style={{ marginBottom: '10px' }}
+        />
+        <button style={{ marginBottom: '10px' }} onClick={handleGetHtmlBlock}>
+          Get HTML Block
         </button>
-        <button style={{ marginBottom: '10px' }} onClick={() => console.log('Fetch Newsletter Contents')}>
-          Fetch Newsletter Contents
-        </button>
-        <button style={{ marginBottom: '10px' }} onClick={() => console.log('Schedule Newsletter')}>
-          Schedule Newsletter
-        </button>
-      </div>
-      <div style={{ marginLeft: '20%', width: '80%', padding: '10px' }}>
-        {/* Empty section for future content */}
       </div>
     </div>
   );
