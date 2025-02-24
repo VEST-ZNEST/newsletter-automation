@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import zNestLogo from './assets/znest-logo.png'; // Adjust the path as necessary
+import axios from 'axios';
 
 const App: React.FC = () => {
   // Get today's date in the format YYYY-MM-DD
@@ -34,8 +35,22 @@ const App: React.FC = () => {
     setHeadlines(generatedHeadlines);
 
     switch (topic) {
-      case "AI Headlines":
+      case "AI Headlines": {
         // TODO(anish): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
+        axios
+          .get("http://localhost:5000/api/ai-news", {
+            params: {
+              date: inputDate,            // the day to filter on
+              numHeadlines: inputNumHeadlines, // number of headlines requested
+          },
+         })
+        .then((response) => {
+          const fetchedHeadlines: string[] = response.data.headlines;
+          // Update state with the fetched headlines array
+          setHeadlines(fetchedHeadlines)
+        break;
+      }
+      
       case "Senior Housing News":
         // TODO(tyler): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
       case "For-Sale Listings":
