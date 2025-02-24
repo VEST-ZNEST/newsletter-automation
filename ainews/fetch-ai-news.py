@@ -1,0 +1,98 @@
+import os
+import requests
+from dotenv import load_dotenv
+from datetime import datetime
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get the API key from the environment
+API_KEY = os.getenv("NEWSAPI_KEY")
+if not API_KEY:
+    raise ValueError("No API key found. Please set NEWSAPI_KEY in your .env file.")
+
+BASE_URL = "https://newsapi.org/v2/everything"
+
+def fetch_ai_news():
+    """Fetches the top 5 AI news stories from NewsAPI."""
+    params = {
+        'q': '"artificial intelligence" OR AI',  # Search query
+        'sortBy': 'relevancy',                    # Sort by relevance
+        'pageSize': 5,                            # Top 5 articles
+        'language': 'en',                         # English articles only
+        'apiKey': API_KEY
+    }
+    response = requests.get(BASE_URL, params=params)
+    response.raise_for_status()
+    data = response.json()
+    if data.get("status") != "ok":
+        raise Exception("API returned an error: " + str(data))
+    return data.get("articles", [])
+
+def format_article(article):
+    """Formats a single article as plain text."""
+    title = article.get("title", "No Title")
+    description = article.get("description", "No description available.")
+    author = article.get("author", "Unknown Author")
+    source = article.get("source", {}).get("name", "Unknown Source")
+    publishedAt = article.get("publishedAt", "")
+    try:
+        published_dt = datetime.fromisoformat(publishedAt.replace("Z", "+00:00"))
+        published_str = published_dt.strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        published_str = publishedAt
+    url = article.get("url", "")
+    
+    formatted = (
+        f"Title: {title}\n"
+        f"Author: {author}\n"
+        f"Source: {source}\n"
+        f"Published: {published_str}\n"
+        f"Summary: {description}\n"
+        f"Link: {url}\n"
+    )
+    return formatted
+
+def main():
+    try:
+        articles = fetch_ai_news()
+        print("Top 5 AI News Stories:\n")
+        for i, article in enumerate(articles, start=1):
+            formatted_article = format_article(article)
+            print(f"Story {i}:\n{formatted_article}")
+            print("-" * 40 + "\n")
+    except Exception as e:
+        print("Error fetching or formatting AI news:", e)
+
+if __name__ == "__main__":
+    main()
+
+
+def fetch_ai_news_with_params(date: str, num_headlines: int):
+    """
+    Fetches AI news filtered to a given day (using the 'from' and 'to' parameters)
+    and returns up to num_headlines articles.
+    """
+    params = {
+        'q': '"artificial intelligence" OR AI',
+        'sortBy': 'relevancy',
+        'pageSize': num_headlines,
+        'language': 'en',
+        'apiKey': API_KEY
+    }
+    if date:
+        # Set the "from" date to the provided date.
+        params['from'] = date
+        # Calculate the "to" date as one day after to limit results to that day.
+        from datetime import timedelta
+        date_obj = datetime.fromisoformat(date)
+        to_date_obj = date_obj + timedelta(days=1)
+        to_date = to_date_obj.isoformat().split("T")[0]
+        params['to'] = to_date
+
+    response = requests.get(BASE_URL, params=params)
+    response.raise_for_status()
+    data = response.json()
+    if data.get("status") != "ok":
+        raise Exception("API returned an error: " + str(data))
+    return data.get("articles", [])
