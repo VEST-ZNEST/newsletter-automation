@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
 from fetch_ai_news import fetch_ai_news_with_params, format_article
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+
 
 @app.route("/api/ai-news", methods=["GET"])
 def get_ai_news():
@@ -21,5 +24,6 @@ def get_ai_news():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run(host='0.0.0.0', port=5001)

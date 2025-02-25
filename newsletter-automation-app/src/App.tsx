@@ -21,46 +21,42 @@ const App: React.FC = () => {
 
   const handleGetHeadlines = () => {
     if (!inputDate || inputNumHeadlines <= 0) {
-      return; // Do nothing if no date is selected or numHeadlines is 0
+      return;
     }
 
     // Update states only when "Get Headlines" is pressed
     setDate(inputDate);
     setNumHeadlines(inputNumHeadlines);
     setTopic(inputTopic);
-    setShowHtml(false); // Reset the toggle
-
-    // THIS IS TEMPORARY
-    const generatedHeadlines = Array.from({ length: inputNumHeadlines }, (_, i) => `${inputTopic} Headline ${i + 1}`);
-    setHeadlines(generatedHeadlines);
 
     switch (topic) {
       case "AI Headlines": {
-        // TODO(anish): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
         axios
-          .get("http://localhost:5000/api/ai-news", {
+          .get("http://localhost:5001/api/ai-news", {
             params: {
-              date: inputDate,            // the day to filter on
-              numHeadlines: inputNumHeadlines, // number of headlines requested
-          },
-         })
-        .then((response) => {
-          const fetchedHeadlines: string[] = response.data.headlines;
-          // Update state with the fetched headlines array
-          setHeadlines(fetchedHeadlines)
+              date: inputDate,
+              numHeadlines: inputNumHeadlines,
+            },
+          })
+          .then((response) => {
+            const fetchedHeadlines: string[] = response.data.headlines;
+            console.log("fetchedHeadlines: ", fetchedHeadlines)
+            setHeadlines(fetchedHeadlines);
+            // Generate HTML block after fetching headlines
+            const content = `<div>\n  <p>Date: ${inputDate}</p>\n  <p>Topic: ${inputTopic}</p>\n  <p>Number of Headlines: ${inputNumHeadlines}</p>\n  <ul>\n    ${fetchedHeadlines.map(h => `<li>${h}</li>`).join('\n    ')}\n  </ul>\n</div>`;
+            setHtmlContent(content);
+          });
         break;
       }
-      
       case "Senior Housing News":
         // TODO(tyler): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
+        break;
       case "For-Sale Listings":
         // TODO(harris): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
+        break;
       default:
-        break
+        break;
     }
-    // Generate HTML block
-    const content = `<div>\n  <p>Date: ${inputDate}</p>\n  <p>Topic: ${inputTopic}</p>\n  <p>Number of Headlines: ${inputNumHeadlines}</p>\n  <ul>\n    ${generatedHeadlines.map(h => `<li>${h}</li>`).join('\n    ')}\n  </ul>\n</div>`;
-    setHtmlContent(content);
   };
 
   return (
@@ -117,7 +113,7 @@ const App: React.FC = () => {
               <h3 style={{ color: 'black' }}>{date} - {topic}</h3>
               <ul>
                 {headlines.map((headline, index) => (
-                  <li key={index}>{headline}</li>
+                  <li key={index} dangerouslySetInnerHTML={{ __html: headline }} />
                 ))}
               </ul>
             </div>

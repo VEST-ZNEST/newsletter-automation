@@ -9,9 +9,11 @@ load_dotenv()
 # Get the API key from the environment
 API_KEY = os.getenv("NEWSAPI_KEY")
 if not API_KEY:
-    raise ValueError("No API key found. Please set NEWSAPI_KEY in your .env file.")
+    raise ValueError(
+        "No API key found. Please set NEWSAPI_KEY in your .env file.")
 
 BASE_URL = "https://newsapi.org/v2/everything"
+
 
 def fetch_ai_news():
     """Fetches the top 5 AI news stories from NewsAPI."""
@@ -29,29 +31,13 @@ def fetch_ai_news():
         raise Exception("API returned an error: " + str(data))
     return data.get("articles", [])
 
+
 def format_article(article):
-    """Formats a single article as plain text."""
+    """Formats a single article to return just the title as a link."""
     title = article.get("title", "No Title")
-    description = article.get("description", "No description available.")
-    author = article.get("author", "Unknown Author")
-    source = article.get("source", {}).get("name", "Unknown Source")
-    publishedAt = article.get("publishedAt", "")
-    try:
-        published_dt = datetime.fromisoformat(publishedAt.replace("Z", "+00:00"))
-        published_str = published_dt.strftime("%Y-%m-%d %H:%M")
-    except Exception:
-        published_str = publishedAt
     url = article.get("url", "")
-    
-    formatted = (
-        f"Title: {title}\n"
-        f"Author: {author}\n"
-        f"Source: {source}\n"
-        f"Published: {published_str}\n"
-        f"Summary: {description}\n"
-        f"Link: {url}\n"
-    )
-    return formatted
+    return f'<a href="{url}" target="_blank">{title}</a>'
+
 
 def main():
     try:
@@ -63,6 +49,7 @@ def main():
             print("-" * 40 + "\n")
     except Exception as e:
         print("Error fetching or formatting AI news:", e)
+
 
 if __name__ == "__main__":
     main()
