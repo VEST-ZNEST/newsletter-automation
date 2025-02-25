@@ -6,46 +6,78 @@ const App: React.FC = () => {
   // Get today's date in the format YYYY-MM-DD
   const today = new Date().toISOString().split('T')[0];
 
-  const [date, setDate] = useState(today);
-  const [numHeadlines, setNumHeadlines] = useState<number>(5);
-  const [headlines, setHeadlines] = useState<string[]>([]);
-  const [htmlContent, setHtmlContent] = useState<string | null>(null);
-  const [showHtml, setShowHtml] = useState(false);
-  const [topic, setTopic] = useState("AI Headlines"); // Default topic
+  const [data, setData] = useState<any>(null);
 
   // Store input values separately until "Get Headlines" is clicked
   const [inputDate, setInputDate] = useState(today);
   const [inputNumHeadlines, setInputNumHeadlines] = useState<number>(5);
   const [inputTopic, setInputTopic] = useState("AI Headlines");
 
-  const handleGetHeadlines = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGetHeadlines = async (regenerate: boolean = false) => {
     if (!inputDate || inputNumHeadlines <= 0) {
       return; // Do nothing if no date is selected or numHeadlines is 0
     }
 
-    // Update states only when "Get Headlines" is pressed
-    setDate(inputDate);
-    setNumHeadlines(inputNumHeadlines);
-    setTopic(inputTopic);
-    setShowHtml(false); // Reset the toggle
 
-    // THIS IS TEMPORARY
-    const generatedHeadlines = Array.from({ length: inputNumHeadlines }, (_, i) => `${inputTopic} Headline ${i + 1}`);
-    setHeadlines(generatedHeadlines);
+    setIsLoading(true);
+    setError(null);
 
-    switch (topic) {
-      case "AI Headlines":
-        // TODO(anish): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
-      case "Senior Housing News":
-        // TODO(tyler): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
-      case "For-Sale Listings":
-        // TODO(harris): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
-      default:
-        break
+
+
+    try {
+      if (inputTopic === "Senior Housing News") {
+        console.log('Fetching from backend...');
+        const response = await fetch('http://localhost:5000/api/senior-housing/headlines', {
+          method: regenerate ? 'POST' : 'GET'
+        });
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch headlines: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        if (!data.articles || !Array.isArray(data.articles)) {
+          throw new Error('Invalid articles data received');
+        }
+        
+        if (!data.html_content) {
+          throw new Error('No HTML content received');
+        }
+        
+        setData(data);
+      } else {
+        // Simulate loading for other topics
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Temporary handling for other topics
+        const generatedHeadlines = Array.from({ length: inputNumHeadlines }, (_, i) => `${inputTopic} Headline ${i + 1}`);
+        setData({
+          articles: generatedHeadlines.map(title => ({
+            title,
+            url: '#',
+            publication_date: new Date().toISOString()
+          }))
+        });
+
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      console.error('Error fetching headlines:', error);
+      setError(`Failed to fetch headlines: ${errorMessage}`);
+      setData(null);
+    } finally {
+      setIsLoading(false);
     }
-    // Generate HTML block
-    const content = `<div>\n  <p>Date: ${inputDate}</p>\n  <p>Topic: ${inputTopic}</p>\n  <p>Number of Headlines: ${inputNumHeadlines}</p>\n  <ul>\n    ${generatedHeadlines.map(h => `<li>${h}</li>`).join('\n    ')}\n  </ul>\n</div>`;
-    setHtmlContent(content);
   };
 
   return (
@@ -87,36 +119,53 @@ const App: React.FC = () => {
           </select>
         </div>
 
-        <button style={{ marginBottom: '10px' }} onClick={handleGetHeadlines}>
-          Get Headlines
+        <button 
+          style={{ marginBottom: '10px', opacity: isLoading ? 0.7 : 1 }} 
+          onClick={() => handleGetHeadlines(false)} 
+          disabled={isLoading}
+        >
+          {isLoading ? 'Loading...' : 'Get Headlines'}
         </button>
 
-        {/* Conditionally render either headlines or HTML block */}
-        {htmlContent && showHtml ? (
-          <div style={{ marginTop: '10px', marginBottom: '10px', padding: '10px', border: '1px solid #ccc', backgroundColor: 'black', width: '100%', textAlign: 'left', color: 'white' }}>
-            <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>{htmlContent}</pre>
+        {error && (
+          <div style={{ color: 'red', marginBottom: '10px' }}>
+            {error}
           </div>
-        ) : (
-          headlines.length > 0 && (
-            <div style={{ marginTop: '10px', marginBottom: '10px', padding: '10px', backgroundColor: 'white', border: '1px solid #ccc', width: '100%', textAlign: 'center' }}>
-              <h3 style={{ color: 'black' }}>{date} - {topic}</h3>
-              <ul>
-                {headlines.map((headline, index) => (
-                  <li key={index}>{headline}</li>
-                ))}
-              </ul>
-            </div>
-          )
         )}
 
-        {/* Toggle switch with label */}
-        {htmlContent && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
-            <label style={{ fontSize: '14px', color: 'black' }}>Show HTML</label>
-            <label className="switch">
-              <input type="checkbox" checked={showHtml} onChange={() => setShowHtml(prev => !prev)} />
-              <span className="slider round"></span>
-            </label>
+        {/* Display articles as a list */}
+        {data && data.articles && (
+          <div style={{ marginTop: '10px', marginBottom: '10px', padding: '20px', backgroundColor: 'white', border: '1px solid #ccc', width: '100%', maxWidth: '800px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ color: '#333', marginBottom: '15px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
+              Senior Housing News - {new Date().toLocaleDateString()}
+            </h3>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {data.articles.map((article: any, index: number) => (
+                <li key={index} style={{ marginBottom: '15px', padding: '10px', borderBottom: '1px solid #eee' }}>
+                  <a 
+                    href={article.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      color: '#2c5282', 
+                      textDecoration: 'none',
+                      fontSize: '16px',
+                      fontWeight: 500
+                    }}
+                  >
+                    {article.title}
+                  </a>
+                  {article.author && (
+                    <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
+                      By {article.author}
+                    </div>
+                  )}
+                  <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
+                    {new Date(article.publication_date).toLocaleDateString()}
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

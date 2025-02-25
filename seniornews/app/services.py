@@ -42,9 +42,10 @@ def scrape_articles() -> List[Article]:
     
     return articles
 
-def select_top_articles(limit: int = 5) -> List[Article]:
+def select_top_articles(articles: List[Article] = None, limit: int = 5) -> List[Article]:
     """Select top articles based on relevance and recency"""
-    articles = Article.query.order_by(Article.publication_date.desc()).all()
+    if articles is None:
+        articles = Article.query.order_by(Article.publication_date.desc()).all()
     
     # Reset previous selections
     Article.query.update({Article.is_selected: False})
@@ -94,6 +95,32 @@ def select_top_articles(limit: int = 5) -> List[Article]:
     db.session.commit()
     
     return selected_articles
+
+def format_articles_html(articles: List[Article]) -> str:
+    """Format articles as HTML content"""
+    if not articles:
+        return '<div><p>No articles available.</p></div>'
+    
+    html_parts = ['<div class="articles-container">']
+    
+    # Add date header
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    html_parts.append(f'<h2>Senior Housing News - {current_date}</h2>')
+    
+    # Add articles list
+    html_parts.append('<ul class="articles-list">')
+    for article in articles:
+        html_parts.append('<li class="article-item">')
+        html_parts.append(f'<h3><a href="{article.url}" target="_blank">{article.title}</a></h3>')
+        if article.author:
+            html_parts.append(f'<p class="article-meta">By {article.author}</p>')
+        html_parts.append(f'<p class="article-meta">Published: {article.publication_date.strftime("%Y-%m-%d")}</p>')
+        html_parts.append('</li>')
+    html_parts.append('</ul>')
+    
+    html_parts.append('</div>')
+    
+    return '\n'.join(html_parts)
 
 def send_newsletter() -> dict:
     """Create and send newsletter via Mailchimp"""

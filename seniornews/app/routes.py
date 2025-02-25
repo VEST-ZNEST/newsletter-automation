@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app import db
 from app.models import Article
-from app.services import scrape_articles, select_top_articles, send_newsletter
+from app.services import scrape_articles, select_top_articles, send_newsletter, format_articles_html
 
 bp = Blueprint('main', __name__)
 
@@ -45,4 +45,54 @@ def create_newsletter():
             'campaign_id': result.get('id')
         })
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/senior-housing/headlines', methods=['GET', 'POST'])
+def get_senior_housing_headlines():
+    """Get or refresh Senior Housing News headlines"""
+    try:
+        if request.method == 'POST':
+            # If POST, scrape new articles
+            articles = scrape_articles()
+            if not articles:
+                return jsonify({'error': 'No new articles found. Please try again later.'}), 404
+        else:
+            # If GET, use existing articles
+            articles = Article.query.order_by(Article.publication_date.desc()).all()
+            if not articles:
+                articles = scrape_articles()
+                if not articles:
+                    return jsonify({'error': 'No articles available. Please try regenerating headlines.'}), 404
+        
+        # Select and sort top articles
+        try:
+            top_articles = select_top_articles(articles, limit=5)
+            if not top_articles:
+                return jsonify({'error': 'Failed to select top articles'}), 500
+        except Exception as e:
+            print(f'Error selecting top articles: {str(e)}')
+            return jsonify({'error': 'Failed to process articles'}), 500
+        
+        # Format HTML content
+        try:
+            html_content = format_articles_html(top_articles)
+        except Exception as e:
+            print(f'Error formatting HTML: {str(e)}')
+            return jsonify({'error': 'Failed to format articles'}), 500
+        
+        # Convert articles to dict format
+        article_dicts = [article.to_dict() for article in top_articles]
+        
+        response_data = {
+            'articles': article_dicts,
+            'html_content': html_content
+        }
+        
+        # Debug logging
+        print('Response data:', response_data)
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f'Error in get_senior_housing_headlines: {str(e)}')
         return jsonify({'error': str(e)}), 500
