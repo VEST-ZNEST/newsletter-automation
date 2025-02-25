@@ -49,6 +49,7 @@ def create_newsletter():
 
 @bp.route('/api/senior-housing/headlines', methods=['GET', 'POST'])
 def get_senior_housing_headlines():
+    num_headlines = request.args.get('num_headlines', default=5, type=int)
     """Get or refresh Senior Housing News headlines"""
     try:
         if request.method == 'POST':
@@ -66,7 +67,7 @@ def get_senior_housing_headlines():
         
         # Select and sort top articles
         try:
-            top_articles = select_top_articles(articles, limit=5)
+            top_articles = select_top_articles(articles, limit=num_headlines)
             if not top_articles:
                 return jsonify({'error': 'Failed to select top articles'}), 500
         except Exception as e:

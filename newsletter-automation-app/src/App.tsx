@@ -30,7 +30,8 @@ const App: React.FC = () => {
     try {
       if (inputTopic === "Senior Housing News") {
         console.log('Fetching from backend...');
-        const response = await fetch('http://localhost:5000/api/senior-housing/headlines', {
+        const url = `http://localhost:5000/api/senior-housing/headlines?num_headlines=${inputNumHeadlines}`;
+        const response = await fetch(url, {
           method: regenerate ? 'POST' : 'GET'
         });
         console.log('Response status:', response.status);
