@@ -156,14 +156,7 @@ const App: React.FC = () => {
                   >
                     {article.title}
                   </a>
-                  {article.author && (
-                    <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
-                      By {article.author}
-                    </div>
-                  )}
-                  <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
-                    {new Date(article.publication_date).toLocaleDateString()}
-                  </div>
+
                 </li>
               ))}
             </ul>
