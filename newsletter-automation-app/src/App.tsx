@@ -8,57 +8,43 @@ const App: React.FC = () => {
   const today = new Date().toISOString().split('T')[0];
 
   const [date, setDate] = useState(today);
-  const [numHeadlines, setNumHeadlines] = useState<number>(5);
   const [headlines, setHeadlines] = useState<string[]>([]);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [showHtml, setShowHtml] = useState(false);
-  const [topic, setTopic] = useState("AI Headlines"); // Default topic
 
-  // Store input values separately until "Get Headlines" is clicked
+  // Store input values separately until "Generate Newsletter" is clicked
   const [inputDate, setInputDate] = useState(today);
   const [inputEndDate, setInputEndDate] = useState(today);
-  const [inputNumHeadlines, setInputNumHeadlines] = useState<number>(5);
-  const [inputTopic, setInputTopic] = useState("AI Headlines");
 
-  const handleGetHeadlines = () => {
-    if (!inputDate || inputNumHeadlines <= 0) {
+  const handleGenerateNewsletter = () => {
+    if (!inputDate) {
       return;
     }
 
-    // Update states only when "Get Headlines" is pressed
     setDate(inputDate);
-    setNumHeadlines(inputNumHeadlines);
-    setTopic(inputTopic);
 
-    switch (topic) {
-      case "AI Headlines": {
-        axios
-          .get("http://localhost:5001/api/ai-news", {
-            params: {
-              date_from: inputDate,
-              date_to: inputEndDate,
-              numHeadlines: inputNumHeadlines,
-            },
-          })
-          .then((response) => {
-            const fetchedHeadlines: string[] = response.data.headlines;
-            console.log("fetchedHeadlines: ", fetchedHeadlines)
-            setHeadlines(fetchedHeadlines);
-            // Generate HTML block after fetching headlines
-            const content = `<div>\n  <p>Date: ${inputDate}</p>\n  <p>Topic: ${inputTopic}</p>\n  <p>Number of Headlines: ${inputNumHeadlines}</p>\n  <ul>\n    ${fetchedHeadlines.map(h => `<li>${h}</li>`).join('\n    ')}\n  </ul>\n</div>`;
-            setHtmlContent(content);
-          });
-        break;
-      }
-      case "Senior Housing News":
-        // TODO(tyler): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
-        break;
-      case "For-Sale Listings":
-        // TODO(harris): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
-        break;
-      default:
-        break;
-    }
+    axios
+      .get("http://localhost:5001/api/ai-news", {
+        params: {
+          //date_from: inputDate,
+          date_to: inputEndDate,
+          numHeadlines: 5,
+        },
+      })
+      .then((response) => {
+        const fetchedHeadlines: string[] = response.data.headlines;
+        setHeadlines(fetchedHeadlines);
+        
+        // Generate HTML newsletter content
+        const content = `
+        <div>
+          <ul style="list-style-type: disc; padding-left: 20px;">
+            ${fetchedHeadlines.map(headline => `<li style="margin-bottom: 10px;"><strong style="color: blue;">${headline}</strong></li>`).join('')}
+          </ul>
+        </div>
+      `;
+        setHtmlContent(content);
+      });
   };
 
   return (
@@ -86,31 +72,8 @@ const App: React.FC = () => {
           />
         </div>
 
-        {/* Number of Headlines Input */}
-        <label style={{ marginBottom: '5px', color: 'black' }}>Num of headlines:</label>
-        <input
-          type="number"
-          value={inputNumHeadlines}
-          onChange={(e) => setInputNumHeadlines(Number(e.target.value))}
-          min={1}
-          style={{ width: '100px' }}
-          placeholder="Headlines"
-        />
-        
-        {/* Topic Dropdown */}
-        <label style={{ marginTop: '10px', marginBottom: '5px', color: 'black' }}>Select Topic:</label>
-        <select
-          value={inputTopic}
-          onChange={(e) => setInputTopic(e.target.value)}
-          style={{ width: '200px', padding: '5px' }}
-        >
-          <option value="AI Headlines">AI Headlines</option>
-          <option value="Senior Housing News">Senior Housing News</option>
-          <option value="For-Sale Listings">For-Sale Listings</option>
-        </select>
-
-        <button style={{ marginBottom: '10px' }} onClick={handleGetHeadlines}>
-          Get Headlines
+        <button style={{ marginBottom: '10px' }} onClick={handleGenerateNewsletter}>
+          Generate Newsletter
         </button>
 
         {/* Conditionally render either headlines or HTML block */}
@@ -120,8 +83,7 @@ const App: React.FC = () => {
           </div>
         ) : (
           headlines.length > 0 && (
-            <div style={{ marginTop: '10px', marginBottom: '10px', padding: '10px', backgroundColor: 'white', border: '1px solid #ccc', width: '100%', textAlign: 'center' }}>
-              <h3 style={{ color: 'black' }}>{date} - {topic}</h3>
+            <div style={{ marginTop: '10px', marginBottom: '10px', padding: '10px', backgroundColor: 'white', border: '1px solid #ccc', width: '100%', textAlign: 'left' }}>
               <ul>
                 {headlines.map((headline, index) => (
                   <li key={index} dangerouslySetInnerHTML={{ __html: headline }} />
