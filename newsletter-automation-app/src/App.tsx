@@ -16,6 +16,7 @@ const App: React.FC = () => {
 
   // Store input values separately until "Get Headlines" is clicked
   const [inputDate, setInputDate] = useState(today);
+  const [inputEndDate, setInputEndDate] = useState(today);
   const [inputNumHeadlines, setInputNumHeadlines] = useState<number>(5);
   const [inputTopic, setInputTopic] = useState("AI Headlines");
 
@@ -34,7 +35,8 @@ const App: React.FC = () => {
         axios
           .get("http://localhost:5001/api/ai-news", {
             params: {
-              date: inputDate,
+              date_from: inputDate,
+              date_to: inputEndDate,
               numHeadlines: inputNumHeadlines,
             },
           })
@@ -64,8 +66,9 @@ const App: React.FC = () => {
       <img src={zNestLogo} alt="Znest Logo" style={{ marginBottom: '20px', width: '150px' }} />
       <div className="centered-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px' }}>
         
-        {/* Date Input */}
+        {/* Date Range Input */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
+          <label style={{ marginBottom: '5px', color: 'black' }}>Start Date:</label>
           <input
             type="date"
             value={inputDate}
@@ -73,30 +76,38 @@ const App: React.FC = () => {
             max={today}
             style={{ marginBottom: '10px' }}
           />
-          
-          {/* Number of Headlines Input */}
-          <label style={{ marginBottom: '5px', color: 'black' }}>Num of headlines:</label>
+          <label style={{ marginBottom: '5px', color: 'black' }}>End Date:</label>
           <input
-            type="number"
-            value={inputNumHeadlines}
-            onChange={(e) => setInputNumHeadlines(Number(e.target.value))}
-            min={1}
-            style={{ width: '100px' }}
-            placeholder="Headlines"
+            type="date"
+            value={inputEndDate}
+            onChange={(e) => setInputEndDate(e.target.value)}
+            max={today}
+            style={{ marginBottom: '10px' }}
           />
-          
-          {/* Topic Dropdown */}
-          <label style={{ marginTop: '10px', marginBottom: '5px', color: 'black' }}>Select Topic:</label>
-          <select
-            value={inputTopic}
-            onChange={(e) => setInputTopic(e.target.value)}
-            style={{ width: '200px', padding: '5px' }}
-          >
-            <option value="AI Headlines">AI Headlines</option>
-            <option value="Senior Housing News">Senior Housing News</option>
-            <option value="For-Sale Listings">For-Sale Listings</option>
-          </select>
         </div>
+
+        {/* Number of Headlines Input */}
+        <label style={{ marginBottom: '5px', color: 'black' }}>Num of headlines:</label>
+        <input
+          type="number"
+          value={inputNumHeadlines}
+          onChange={(e) => setInputNumHeadlines(Number(e.target.value))}
+          min={1}
+          style={{ width: '100px' }}
+          placeholder="Headlines"
+        />
+        
+        {/* Topic Dropdown */}
+        <label style={{ marginTop: '10px', marginBottom: '5px', color: 'black' }}>Select Topic:</label>
+        <select
+          value={inputTopic}
+          onChange={(e) => setInputTopic(e.target.value)}
+          style={{ width: '200px', padding: '5px' }}
+        >
+          <option value="AI Headlines">AI Headlines</option>
+          <option value="Senior Housing News">Senior Housing News</option>
+          <option value="For-Sale Listings">For-Sale Listings</option>
+        </select>
 
         <button style={{ marginBottom: '10px' }} onClick={handleGetHeadlines}>
           Get Headlines
