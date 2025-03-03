@@ -44,7 +44,7 @@ const App: React.FC = () => {
             const fetchedHeadlines: string[] = response.data.headlines;
             console.log("fetchedHeadlines: ", fetchedHeadlines);
             setHeadlines(fetchedHeadlines);
-            // Use the new function to update HTML
+            // Update HTML content without delete buttons
             updateHtmlContent(fetchedHeadlines);
           });
         break;
@@ -64,14 +64,14 @@ const App: React.FC = () => {
     const updatedHeadlines = headlines.filter((_, index) => index !== indexToDelete);
     setHeadlines(updatedHeadlines);
     
-    // Update HTML content with delete buttons
+    // Update HTML content without delete buttons
     updateHtmlContent(updatedHeadlines);
   };
 
-  // New function to update HTML content
+  // Update HTML content without delete buttons
   const updateHtmlContent = (headlinesList: string[]) => {
-    const content = `<div>\n<ul>\n    ${headlinesList.map((h, i) => 
-      `<li>${h}<button id="delete-btn-${i}" data-index="${i}" style="margin-left: 10px; padding: 2px 8px; background-color: #ff4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button></li>`
+    const content = `<div>\n<ul>\n    ${headlinesList.map(h => 
+      `<li style="text-align: left;">${h}</li>`
     ).join('\n    ')}\n  </ul>\n</div>`;
     setHtmlContent(content);
   };
@@ -157,42 +157,87 @@ const App: React.FC = () => {
           Get Headlines
         </button>
 
-        {/* Preview with delete functionality */}
+        {/* Layout for headlines and editor */}
         {htmlContent && (
           <div style={{ 
             display: 'flex', 
+            flexDirection: 'row', 
             gap: '20px', 
             width: '100%', 
             marginTop: '10px'
           }}>
-            {/* Preview */}
-            <div 
-              ref={previewRef}
-              style={{ 
-                flex: 1, 
-                padding: '10px', 
-                backgroundColor: 'white', 
-                border: '1px solid #ccc'
-              }}
-            >
-              <h3 style={{ color: 'black' }}>{date} - {topic}</h3>
-              <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-            </div>
-            
-            {/* Editor */}
+            {/* Headlines with delete buttons */}
             <div style={{ 
-              flex: 1
+              flex: 1, 
+              padding: '10px', 
+              backgroundColor: 'white', 
+              border: '1px solid #ccc',
+              overflowY: 'auto',
+              maxHeight: '400px'
             }}>
-              <textarea
-                value={htmlContent}
-                onChange={(e) => setHtmlContent(e.target.value)}
-                style={{ 
-                  width: '100%', 
-                  height: '300px', 
-                  padding: '10px',
-                  fontFamily: 'monospace'
-                }}
-              />
+              <h3 style={{ color: 'black' }}>{date} - {topic}</h3>
+              
+              <div>
+                <ul>
+                  {headlines.map((headline, index) => (
+                    <li key={index} style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span dangerouslySetInnerHTML={{ __html: headline }}></span>
+                      <button 
+                        onClick={() => handleDeleteHeadline(index)}
+                        style={{
+                          padding: '5px 10px',
+                          backgroundColor: '#ff4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.3s ease',
+                          fontSize: '14px'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#cc0000'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ff4444'}
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Right side with HTML Preview and Editor */}
+            <div style={{ 
+              flex: 1, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '10px',
+            }}>
+              {/* HTML Preview */}
+              <div style={{ 
+                flex: 1, 
+                backgroundColor: 'white', 
+                border: '1px solid #ccc',
+                overflowY: 'auto',
+                width: '100%',
+                minHeight: '60%'
+              }}>
+                <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+              </div>
+
+              {/* Editor */}
+
+                <textarea
+                  value={htmlContent}
+                  onChange={(e) => setHtmlContent(e.target.value)}
+                  style={{ 
+                    flex: 1,
+                    width: '100%', 
+                    height: '100%', 
+                    padding: '10px',
+                    fontFamily: 'monospace'
+                  }}
+                />
+
             </div>
           </div>
         )}
