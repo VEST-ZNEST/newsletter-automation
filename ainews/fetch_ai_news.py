@@ -55,10 +55,9 @@ if __name__ == "__main__":
     main()
 
 
-def fetch_ai_news_with_params(date: str, num_headlines: int):
+def fetch_ai_news_with_params(date_from: str, date_to: str, num_headlines: int):
     """
-    Fetches AI news filtered to a given day (using the 'from' and 'to' parameters)
-    and returns up to num_headlines articles.
+    Fetches AI news filtered to a given date range and returns up to num_headlines articles.
     """
     params = {
         'q': '"artificial intelligence" OR AI',
@@ -67,15 +66,17 @@ def fetch_ai_news_with_params(date: str, num_headlines: int):
         'language': 'en',
         'apiKey': API_KEY
     }
-    if date:
-        # Set the "from" date to the provided date.
-        params['from'] = date
-        # Calculate the "to" date as one day after to limit results to that day.
+
+    if date_from and date_to:
+        params['from'] = date_from
+        params['to'] = date_to
+    elif date_from:
+        # If only start date is provided, set range for that day
+        params['from'] = date_from
         from datetime import timedelta
-        date_obj = datetime.fromisoformat(date)
+        date_obj = datetime.fromisoformat(date_from)
         to_date_obj = date_obj + timedelta(days=1)
-        to_date = to_date_obj.isoformat().split("T")[0]
-        params['to'] = to_date
+        params['to'] = to_date_obj.isoformat().split("T")[0]
 
     response = requests.get(BASE_URL, params=params)
     response.raise_for_status()

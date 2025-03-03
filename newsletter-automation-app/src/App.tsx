@@ -16,8 +16,20 @@ const App: React.FC = () => {
   const [inputDate, setInputDate] = useState(today);
   const [inputEndDate, setInputEndDate] = useState(today);
 
+  // Add a new state for editable HTML
+  const [editableHtml, setEditableHtml] = useState<string>('');
+
+  // Update the state to include a copy confirmation
+  const [isCopied, setIsCopied] = useState(false);
+
   const handleGenerateNewsletter = () => {
-    if (!inputDate) {
+    if (!inputDate || !inputEndDate) {
+      alert('Please select both start and end dates');
+      return;
+    }
+
+    if (new Date(inputDate) > new Date(inputEndDate)) {
+      alert('Start date cannot be after end date');
       return;
     }
 
@@ -26,7 +38,7 @@ const App: React.FC = () => {
     axios
       .get("http://localhost:5001/api/ai-news", {
         params: {
-          //date_from: inputDate,
+          date_from: inputDate,
           date_to: inputEndDate,
           numHeadlines: 5,
         },
@@ -35,16 +47,35 @@ const App: React.FC = () => {
         const fetchedHeadlines: string[] = response.data.headlines;
         setHeadlines(fetchedHeadlines);
         
-        // Generate HTML newsletter content
         const content = `
-        <div>
-          <ul style="list-style-type: disc; padding-left: 20px;">
-            ${fetchedHeadlines.map(headline => `<li style="margin-bottom: 10px;"><strong style="color: blue;">${headline}</strong></li>`).join('')}
-          </ul>
-        </div>
-      `;
+<div style="text-align: left;">
+  <ul style="list-style-type: disc; padding-left: 20px;">
+    ${fetchedHeadlines.map(headline => `
+    <li style="margin-bottom: 10px; text-align: left;">
+      <strong style="color: blue;">${headline}</strong>
+    </li>`).join('')}
+  </ul>
+</div>
+        `.trim();
+        
         setHtmlContent(content);
+        setEditableHtml(content);
+      })
+      .catch((error) => {
+        console.error('Error fetching news:', error);
+        alert('Failed to fetch news. Please try again.');
       });
+  };
+
+  // Update the handleCopyToClipboard function
+  const handleCopyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(editableHtml);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000); // Hide message after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
   };
 
   return (
@@ -76,35 +107,63 @@ const App: React.FC = () => {
           Generate Newsletter
         </button>
 
-        {/* Conditionally render either headlines or HTML block */}
-        {htmlContent && showHtml ? (
-          <div style={{ marginTop: '10px', marginBottom: '10px', padding: '10px', border: '1px solid #ccc', backgroundColor: 'black', width: '100%', textAlign: 'left', color: 'white' }}>
-            <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>{htmlContent}</pre>
-          </div>
-        ) : (
-          headlines.length > 0 && (
-            <div style={{ marginTop: '10px', marginBottom: '10px', padding: '10px', backgroundColor: 'white', border: '1px solid #ccc', width: '100%', textAlign: 'left' }}>
-              <ul>
-                {headlines.map((headline, index) => (
-                  <li key={index} dangerouslySetInnerHTML={{ __html: headline }} />
-                ))}
-              </ul>
-            </div>
-          )
-        )}
-
-        {/* Toggle switch with label */}
+        {/* Replace the toggle switch with a textarea and preview */}
         {htmlContent && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
-            <label style={{ fontSize: '14px', color: 'black' }}>Show HTML</label>
-            <label className="switch">
-              <input type="checkbox" checked={showHtml} onChange={() => setShowHtml(prev => !prev)} />
-              <span className="slider round"></span>
-            </label>
+          <div style={{ display: 'flex', gap: '20px', width: '100%', marginTop: '20px' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ color: 'black', margin: 0 }}>Edit HTML</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {isCopied && <span style={{ color: 'green', fontSize: '0.9em' }}>Copied to Clipboard!</span>}
+                  <button 
+                    onClick={handleCopyToClipboard}
+                    style={{
+                      padding: '5px 12px',
+                      backgroundColor: '#646cff',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.8em',
+                      transition: 'background-color 0.2s'
+                    }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+              <textarea
+                value={editableHtml}
+                onChange={(e) => setEditableHtml(e.target.value)}
+                style={{
+                  width: '100%',
+                  height: '300px',
+                  padding: '10px',
+                  fontFamily: 'monospace',
+                  backgroundColor: 'black',
+                  color: 'white',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px'
+                }}
+              />
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <h3 style={{ color: 'black', margin: 0 }}>Live Preview</h3>
+              <div
+                style={{
+                  padding: '10px',
+                  border: '1px solid #ccc',
+                  backgroundColor: 'white',
+                  height: '300px',
+                  overflowY: 'auto'
+                }}
+                dangerouslySetInnerHTML={{ __html: editableHtml }}
+              />
+            </div>
           </div>
         )}
 
-        <button style={{ marginBottom: '10px' }} onClick={() => console.log('Regenerate button clicked')}>
+        <button style={{ marginTop: '20px', marginBottom: '10px' }} onClick={() => console.log('Regenerate button clicked')}>
           Regenerate
         </button>
         <button style={{ marginBottom: '10px' }} onClick={() => console.log('Schedule send button clicked')}>

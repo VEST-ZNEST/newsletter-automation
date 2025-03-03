@@ -9,7 +9,8 @@ CORS(app)
 @app.route("/api/ai-news", methods=["GET"])
 def get_ai_news():
     # Get query parameters
-    date = request.args.get("date")
+    date_from = request.args.get("date_from")
+    date_to = request.args.get("date_to")
     num_headlines = request.args.get("numHeadlines", 5)
     try:
         num_headlines = int(num_headlines)
@@ -17,7 +18,7 @@ def get_ai_news():
         num_headlines = 5
 
     try:
-        articles = fetch_ai_news_with_params(date, num_headlines)
+        articles = fetch_ai_news_with_params(date_from, date_to, num_headlines)
         # Format each article using your format_article function.
         headlines = [format_article(article) for article in articles]
         return jsonify({"headlines": headlines})
