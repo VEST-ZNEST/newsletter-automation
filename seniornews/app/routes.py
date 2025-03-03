@@ -33,7 +33,7 @@ def select_articles():
             'articles': [article.to_dict() for article in selected_articles]
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500  
 
 @bp.route('/api/send-newsletter', methods=['POST'])
 def create_newsletter():

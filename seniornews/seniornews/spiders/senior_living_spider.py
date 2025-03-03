@@ -1,4 +1,5 @@
 import scrapy
+from datetime import datetime, timedelta
 from ..items import SeniorNewsItem
 
 class SeniorLivingNewsSpider(scrapy.Spider):
@@ -34,6 +35,16 @@ class SeniorLivingNewsSpider(scrapy.Spider):
                 if link:
                     yield response.follow(link, self.parse_article)
 
+    def is_within_past_week(self, date_str):
+        if not date_str:
+            return False
+        try:
+            article_date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            week_ago = datetime.now(article_date.tzinfo) - timedelta(days=7)
+            return article_date >= week_ago
+        except ValueError:
+            return False
+
     def parse_article(self, response):
         item = SeniorNewsItem()
         
@@ -50,5 +61,7 @@ class SeniorLivingNewsSpider(scrapy.Spider):
             item['author'] = response.css('div.article-meta a::text').get()
             item['publication_date'] = response.css('time::attr(datetime)').get()
             item['url'] = response.url
-        
-        yield item
+
+            # Only yield the item if it's from the past week
+            if self.is_within_past_week(item['publication_date']):
+                yield item

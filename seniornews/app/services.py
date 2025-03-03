@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 from mailchimp3 import MailChimp
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -43,58 +43,79 @@ def scrape_articles() -> List[Article]:
     return articles
 
 def select_top_articles(articles: List[Article] = None, limit: int = 5) -> List[Article]:
-    """Select top articles based on relevance and recency"""
-    if articles is None:
-        articles = Article.query.order_by(Article.publication_date.desc()).all()
-    
-    # Reset previous selections
-    Article.query.update({Article.is_selected: False})
-    
-    if not articles:
-        return []
-    
-    # Prepare article titles for TF-IDF
-    titles = [article.title for article in articles]
-    
-    # Calculate TF-IDF scores
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform(titles)
-    
-    # Keywords related to senior living industry
-    industry_keywords = [
-        "senior living", "retirement", "assisted living", "memory care",
-        "senior housing", "healthcare", "community", "wellness"
-    ]
-    
-    # Calculate relevance scores
-    keyword_vector = vectorizer.transform(industry_keywords)
-    relevance_scores = np.mean(cosine_similarity(tfidf_matrix, keyword_vector), axis=1)
-    
-    # Calculate recency scores (normalize dates to 0-1 range)
-    dates = [article.publication_date for article in articles]
-    min_date = min(dates)
-    max_date = max(dates)
-    date_range = (max_date - min_date).total_seconds()
-    recency_scores = [(d - min_date).total_seconds() / date_range if date_range > 0 else 1 
-                     for d in dates]
-    
-    # Combine scores (70% relevance, 30% recency)
-    final_scores = 0.7 * relevance_scores + 0.3 * np.array(recency_scores)
-    
-    # Update articles with scores and select top ones
-    for article, score in zip(articles, final_scores):
-        article.relevance_score = float(score)
-    
-    # Select top articles
-    selected_articles = sorted(articles, key=lambda x: x.relevance_score, reverse=True)[:limit]
-    
-    # Mark selected articles
-    for article in selected_articles:
-        article.is_selected = True
-    
-    db.session.commit()
-    
-    return selected_articles
+    """Select top articles based on relevance and recency. Only includes articles from the past 7 days."""
+    try:
+        # Get articles from the past 7 days
+        week_ago = datetime.utcnow() - timedelta(days=7)
+        print(f'Filtering articles from {week_ago}')
+        
+        if articles is None:
+            articles = Article.query.filter(Article.publication_date >= week_ago).order_by(Article.publication_date.desc()).all()
+            print(f'Retrieved {len(articles)} articles from database')
+        else:
+            articles = [article for article in articles if article.publication_date and article.publication_date >= week_ago]
+            print(f'Filtered to {len(articles)} articles from provided list')
+            
+        if not articles:
+            print('No articles found within the past 7 days')
+            return []
+        
+        # Reset previous selections
+        try:
+            Article.query.update({Article.is_selected: False})
+            db.session.commit()
+        except Exception as e:
+            print(f'Warning: Failed to reset article selections: {str(e)}')
+            db.session.rollback()
+        
+        # Prepare article titles for TF-IDF
+        titles = [article.title for article in articles]
+        print(f'Processing {len(titles)} articles for ranking')
+        
+        # Calculate TF-IDF scores
+        vectorizer = TfidfVectorizer()
+        tfidf_matrix = vectorizer.fit_transform(titles)
+        
+        # Keywords related to senior living industry
+        industry_keywords = [
+            "senior living", "retirement", "assisted living", "memory care",
+            "senior housing", "healthcare", "community", "wellness"
+        ]
+        
+        # Calculate relevance scores
+        keyword_vector = vectorizer.transform(industry_keywords)
+        relevance_scores = np.mean(cosine_similarity(tfidf_matrix, keyword_vector), axis=1)
+        
+        # Calculate recency scores (normalize dates to 0-1 range)
+        dates = [article.publication_date for article in articles]
+        min_date = min(dates)
+        max_date = max(dates)
+        date_range = (max_date - min_date).total_seconds()
+        recency_scores = [(d - min_date).total_seconds() / date_range if date_range > 0 else 1 
+                         for d in dates]
+        
+        # Combine scores (70% relevance, 30% recency)
+        final_scores = 0.7 * relevance_scores + 0.3 * np.array(recency_scores)
+        
+        # Update articles with scores and select top ones
+        for article, score in zip(articles, final_scores):
+            article.relevance_score = float(score)
+        
+        # Select top articles
+        selected_articles = sorted(articles, key=lambda x: x.relevance_score, reverse=True)[:limit]
+        print(f'Selected {len(selected_articles)} top articles')
+        
+        # Mark selected articles
+        for article in selected_articles:
+            article.is_selected = True
+        db.session.commit()
+        
+        return selected_articles
+        
+    except Exception as e:
+        print(f'Error in select_top_articles: {str(e)}')
+        db.session.rollback()  # Rollback any pending changes
+        raise
 
 def format_articles_html(articles: List[Article]) -> str:
     """Format articles as HTML content"""
