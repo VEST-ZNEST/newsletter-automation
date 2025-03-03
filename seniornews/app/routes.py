@@ -55,6 +55,7 @@ def get_senior_housing_headlines():
         if request.method == 'POST':
             # If POST, scrape new articles
             articles = scrape_articles()
+            print(articles)
             if not articles:
                 return jsonify({'error': 'No new articles found. Please try again later.'}), 404
         else:

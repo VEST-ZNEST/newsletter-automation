@@ -32,7 +32,7 @@ const App: React.FC = () => {
         console.log('Fetching from backend...');
         const url = `http://localhost:5000/api/senior-housing/headlines?num_headlines=${inputNumHeadlines}`;
         const response = await fetch(url, {
-          method: regenerate ? 'POST' : 'GET'
+          method: 'POST'
         });
         console.log('Response status:', response.status);
         

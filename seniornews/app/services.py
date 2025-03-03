@@ -13,34 +13,66 @@ def scrape_articles() -> List[Article]:
     from scrapy.crawler import CrawlerProcess
     from scrapy.utils.project import get_project_settings
     from seniornews.spiders.senior_living_spider import SeniorLivingNewsSpider
+    import json
     
     # Create a temporary file to store scraped items
     output_file = 'temp_output.json'
     
-    # Configure and run the spider
-    settings = get_project_settings()
-    settings['FEEDS'] = {output_file: {'format': 'json'}}
-    process = CrawlerProcess(settings)
-    process.crawl(SeniorLivingNewsSpider)
-    process.start()
-    
-    # Read the scraped items and store in database
-    with open(output_file, 'r') as f:
-        import json
-        items = json.load(f)
-    
-    articles = []
-    for item in items:
-        article = Article.from_scrapy_item(item)
-        db.session.add(article)
-        articles.append(article)
-    
-    db.session.commit()
-    
-    # Clean up temporary file
-    os.remove(output_file)
-    
-    return articles
+    try:
+        # Configure and run the spider
+        settings = get_project_settings()
+        settings['FEEDS'] = {output_file: {'format': 'json'}}
+        settings['LOG_LEVEL'] = 'INFO'  # Show more detailed logs
+        
+        process = CrawlerProcess(settings)
+        process.crawl(SeniorLivingNewsSpider)
+        process.start()
+        
+        # Read the scraped items
+        try:
+            with open(output_file, 'r') as f:
+                items = json.load(f)
+            print(f'Successfully scraped {len(items)} articles')
+        except FileNotFoundError:
+            print('No output file found. Spider may have failed to scrape any articles.')
+            return []
+        except json.JSONDecodeError:
+            print('Output file is empty or invalid JSON')
+            return []
+        
+        # Store articles in database
+        articles = []
+        for item in items:
+            try:
+                article = Article.from_scrapy_item(item)
+                db.session.add(article)
+                articles.append(article)
+            except Exception as e:
+                print(f'Error processing article: {str(e)}')
+                continue
+        
+        if articles:
+            try:
+                db.session.commit()
+                print(f'Successfully stored {len(articles)} articles in database')
+            except Exception as e:
+                print(f'Error committing to database: {str(e)}')
+                db.session.rollback()
+                return []
+        
+        return articles
+        
+    except Exception as e:
+        print(f'Error in scrape_articles: {str(e)}')
+        return []
+        
+    finally:
+        # Clean up temporary file
+        try:
+            if os.path.exists(output_file):
+                os.remove(output_file)
+        except Exception as e:
+            print(f'Error removing temporary file: {str(e)}')
 
 def select_top_articles(articles: List[Article] = None, limit: int = 5) -> List[Article]:
     """Select top articles based on relevance and recency. Only includes articles from the past 7 days."""
