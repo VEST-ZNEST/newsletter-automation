@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import zNestLogo from './assets/znest-logo.png'; // Adjust the path as necessary
 import axios from 'axios';
@@ -30,7 +30,7 @@ const App: React.FC = () => {
     setNumHeadlines(inputNumHeadlines);
     setTopic(inputTopic);
 
-    switch (topic) {
+    switch (inputTopic) {
       case "AI Headlines": {
         axios
           .get("http://localhost:5001/api/ai-news", {
@@ -42,11 +42,10 @@ const App: React.FC = () => {
           })
           .then((response) => {
             const fetchedHeadlines: string[] = response.data.headlines;
-            console.log("fetchedHeadlines: ", fetchedHeadlines)
+            console.log("fetchedHeadlines: ", fetchedHeadlines);
             setHeadlines(fetchedHeadlines);
-            // Generate HTML block after fetching headlines
-            const content = `<div>\n  <p>Date: ${inputDate}</p>\n  <p>Topic: ${inputTopic}</p>\n  <p>Number of Headlines: ${inputNumHeadlines}</p>\n  <ul>\n    ${fetchedHeadlines.map(h => `<li>${h}</li>`).join('\n    ')}\n  </ul>\n</div>`;
-            setHtmlContent(content);
+            // Use the new function to update HTML
+            updateHtmlContent(fetchedHeadlines);
           });
         break;
       }
@@ -60,6 +59,51 @@ const App: React.FC = () => {
         break;
     }
   };
+
+  const handleDeleteHeadline = (indexToDelete: number) => {
+    const updatedHeadlines = headlines.filter((_, index) => index !== indexToDelete);
+    setHeadlines(updatedHeadlines);
+    
+    // Update HTML content with delete buttons
+    updateHtmlContent(updatedHeadlines);
+  };
+
+  // New function to update HTML content
+  const updateHtmlContent = (headlinesList: string[]) => {
+    const content = `<div>\n<ul>\n    ${headlinesList.map((h, i) => 
+      `<li>${h}<button id="delete-btn-${i}" data-index="${i}" style="margin-left: 10px; padding: 2px 8px; background-color: #ff4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button></li>`
+    ).join('\n    ')}\n  </ul>\n</div>`;
+    setHtmlContent(content);
+  };
+
+  // Add direct click handler using useRef and useEffect
+  const previewRef = React.useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    // Function to handle clicks on the preview pane
+    const handlePreviewClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // Check if a delete button was clicked
+      if (target.tagName === 'BUTTON' && target.id.startsWith('delete-btn-')) {
+        const index = parseInt(target.getAttribute('data-index') || '0', 10);
+        handleDeleteHeadline(index);
+        e.preventDefault();
+      }
+    };
+    
+    // Add click event to the preview div
+    const previewDiv = previewRef.current;
+    if (previewDiv) {
+      previewDiv.addEventListener('click', handlePreviewClick);
+    }
+    
+    return () => {
+      if (previewDiv) {
+        previewDiv.removeEventListener('click', handlePreviewClick);
+      }
+    };
+  }, [headlines]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100%' }}>
@@ -113,40 +157,48 @@ const App: React.FC = () => {
           Get Headlines
         </button>
 
-        {/* Conditionally render either headlines or HTML block */}
-        {htmlContent && showHtml ? (
-          <div style={{ marginTop: '10px', marginBottom: '10px', padding: '10px', border: '1px solid #ccc', backgroundColor: 'black', width: '100%', textAlign: 'left', color: 'white' }}>
-            <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>{htmlContent}</pre>
-          </div>
-        ) : (
-          headlines.length > 0 && (
-            <div style={{ marginTop: '10px', marginBottom: '10px', padding: '10px', backgroundColor: 'white', border: '1px solid #ccc', width: '100%', textAlign: 'center' }}>
-              <h3 style={{ color: 'black' }}>{date} - {topic}</h3>
-              <ul>
-                {headlines.map((headline, index) => (
-                  <li key={index} dangerouslySetInnerHTML={{ __html: headline }} />
-                ))}
-              </ul>
-            </div>
-          )
-        )}
-
-        {/* Toggle switch with label */}
+        {/* Preview with delete functionality */}
         {htmlContent && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
-            <label style={{ fontSize: '14px', color: 'black' }}>Show HTML</label>
-            <label className="switch">
-              <input type="checkbox" checked={showHtml} onChange={() => setShowHtml(prev => !prev)} />
-              <span className="slider round"></span>
-            </label>
+          <div style={{ 
+            display: 'flex', 
+            gap: '20px', 
+            width: '100%', 
+            marginTop: '10px'
+          }}>
+            {/* Preview */}
+            <div 
+              ref={previewRef}
+              style={{ 
+                flex: 1, 
+                padding: '10px', 
+                backgroundColor: 'white', 
+                border: '1px solid #ccc'
+              }}
+            >
+              <h3 style={{ color: 'black' }}>{date} - {topic}</h3>
+              <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+            </div>
+            
+            {/* Editor */}
+            <div style={{ 
+              flex: 1
+            }}>
+              <textarea
+                value={htmlContent}
+                onChange={(e) => setHtmlContent(e.target.value)}
+                style={{ 
+                  width: '100%', 
+                  height: '300px', 
+                  padding: '10px',
+                  fontFamily: 'monospace'
+                }}
+              />
+            </div>
           </div>
         )}
 
         <button style={{ marginBottom: '10px' }} onClick={() => console.log('Regenerate button clicked')}>
           Regenerate
-        </button>
-        <button style={{ marginBottom: '10px' }} onClick={() => console.log('Schedule send button clicked')}>
-          Schedule send
         </button>
       </div>
     </div>
