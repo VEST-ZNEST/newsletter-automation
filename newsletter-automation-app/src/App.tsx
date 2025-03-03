@@ -105,57 +105,90 @@ const App: React.FC = () => {
     };
   }, [headlines]);
 
+  const handleCopyToClipboard = () => {
+    if (htmlContent) {
+      navigator.clipboard.writeText(htmlContent).then(() => {
+        alert('HTML content copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100%' }}>
       <img src={zNestLogo} alt="Znest Logo" style={{ marginBottom: '20px', width: '150px' }} />
       <div className="centered-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px' }}>
         
-        {/* Date Range Input */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-          <label style={{ marginBottom: '5px', color: 'black' }}>Start Date:</label>
-          <input
-            type="date"
-            value={inputDate}
-            onChange={(e) => setInputDate(e.target.value)}
-            max={today}
-            style={{ marginBottom: '10px' }}
-          />
-          <label style={{ marginBottom: '5px', color: 'black' }}>End Date:</label>
-          <input
-            type="date"
-            value={inputEndDate}
-            onChange={(e) => setInputEndDate(e.target.value)}
-            max={today}
-            style={{ marginBottom: '10px' }}
-          />
+        {/* Inputs, Topic Dropdown, and Get Headlines Button in one line */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          gap: '10px', 
+          marginBottom: '20px' 
+        }}>
+          {/* Start Date Input */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <label style={{ marginBottom: '5px', color: 'black' }}>Start Date:</label>
+            <input
+              type="date"
+              value={inputDate}
+              onChange={(e) => setInputDate(e.target.value)}
+              max={today}
+            />
+          </div>
+
+          {/* End Date Input */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <label style={{ marginBottom: '5px', color: 'black' }}>End Date:</label>
+            <input
+              type="date"
+              value={inputEndDate}
+              onChange={(e) => setInputEndDate(e.target.value)}
+              max={today}
+            />
+          </div>
+
+          {/* Number of Headlines Input */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <label style={{ marginBottom: '5px', color: 'black' }}>Num of headlines:</label>
+            <input
+              type="number"
+              value={inputNumHeadlines}
+              onChange={(e) => setInputNumHeadlines(Number(e.target.value))}
+              min={1}
+              style={{ width: '100px' }}
+              placeholder="Headlines"
+            />
+          </div>
+
+          {/* Topic Dropdown */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <label style={{ marginBottom: '5px', color: 'black' }}>Select Topic:</label>
+            <select
+              value={inputTopic}
+              onChange={(e) => setInputTopic(e.target.value)}
+              style={{ width: '200px', padding: '5px' }}
+            >
+              <option value="AI Headlines">AI Headlines</option>
+              <option value="Senior Housing News">Senior Housing News</option>
+              <option value="For-Sale Listings">For-Sale Listings</option>
+            </select>
+          </div>
+
+          {/* Get Headlines Button */}
+          <button 
+            style={{ 
+              marginTop: '20px',
+              padding: '5px 10px'
+            }} 
+            onClick={handleGetHeadlines}
+          >
+            Get Headlines
+          </button>
         </div>
-
-        {/* Number of Headlines Input */}
-        <label style={{ marginBottom: '5px', color: 'black' }}>Num of headlines:</label>
-        <input
-          type="number"
-          value={inputNumHeadlines}
-          onChange={(e) => setInputNumHeadlines(Number(e.target.value))}
-          min={1}
-          style={{ width: '100px' }}
-          placeholder="Headlines"
-        />
-        
-        {/* Topic Dropdown */}
-        <label style={{ marginTop: '10px', marginBottom: '5px', color: 'black' }}>Select Topic:</label>
-        <select
-          value={inputTopic}
-          onChange={(e) => setInputTopic(e.target.value)}
-          style={{ width: '200px', padding: '5px' }}
-        >
-          <option value="AI Headlines">AI Headlines</option>
-          <option value="Senior Housing News">Senior Housing News</option>
-          <option value="For-Sale Listings">For-Sale Listings</option>
-        </select>
-
-        <button style={{ marginBottom: '10px' }} onClick={handleGetHeadlines}>
-          Get Headlines
-        </button>
 
         {/* Layout for headlines and editor */}
         {htmlContent && (
@@ -178,10 +211,10 @@ const App: React.FC = () => {
               <h3 style={{ color: 'black' }}>{date} - {topic}</h3>
               
               <div>
-                <ul>
+                <ul style={{ paddingLeft: '20px', listStyleType: 'disc' }}>
                   {headlines.map((headline, index) => (
                     <li key={index} style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span dangerouslySetInnerHTML={{ __html: headline }}></span>
+                      <span style={{ flex: 1, textAlign: 'left' }} dangerouslySetInnerHTML={{ __html: headline }}></span>
                       <button 
                         onClick={() => handleDeleteHeadline(index)}
                         style={{
@@ -211,6 +244,7 @@ const App: React.FC = () => {
               display: 'flex', 
               flexDirection: 'column', 
               gap: '10px',
+              position: 'relative'
             }}>
               {/* HTML Preview */}
               <div style={{ 
@@ -225,12 +259,11 @@ const App: React.FC = () => {
               </div>
 
               {/* Editor */}
-
+              <div style={{ position: 'relative', flex: 1 }}>
                 <textarea
                   value={htmlContent}
                   onChange={(e) => setHtmlContent(e.target.value)}
                   style={{ 
-                    flex: 1,
                     width: '100%', 
                     height: '100%', 
                     padding: '10px',
@@ -238,13 +271,29 @@ const App: React.FC = () => {
                   }}
                 />
 
+                {/* Copy to Clipboard Button */}
+                <button 
+                  style={{ 
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    padding: '3px 6px',
+                    fontSize: '12px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s ease'
+                  }}
+                  onClick={handleCopyToClipboard}
+                >
+                  Copy to Clipboard
+                </button>
+              </div>
             </div>
           </div>
         )}
-
-        <button style={{ marginBottom: '10px' }} onClick={() => console.log('Regenerate button clicked')}>
-          Regenerate
-        </button>
       </div>
     </div>
   );
