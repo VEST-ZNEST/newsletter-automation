@@ -135,28 +135,52 @@ def scrape_articles(start_date=None, end_date=None) -> List[Article]:
 def select_top_articles(articles: List[Article] = None, limit: int = 5, start_date=None, end_date=None) -> List[Article]:
     """Select top articles based on relevance and recency within a date range."""
     try:
+        # Validate input types
+        if articles is not None and not isinstance(articles, list):
+            raise TypeError(f'articles must be a list, got {type(articles)}')
+        if not isinstance(limit, int) or limit <= 0:
+            raise ValueError('limit must be a positive integer')
+            
         # Convert string dates to datetime objects if provided
         start_datetime = None
         end_datetime = None
         
         if start_date:
-            start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+            if not isinstance(start_date, str):
+                raise TypeError(f'start_date must be a string, got {type(start_date)}')
+            try:
+                start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+            except ValueError as e:
+                raise ValueError(f'Invalid start_date format: {e}')
         else:
             start_datetime = datetime.utcnow() - timedelta(days=7)  # Default to a week ago
             
         if end_date:
-            end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+            if not isinstance(end_date, str):
+                raise TypeError(f'end_date must be a string, got {type(end_date)}')
+            try:
+                end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+            except ValueError as e:
+                raise ValueError(f'Invalid end_date format: {e}')
         else:
             end_datetime = datetime.utcnow()  # Default to current date
             
         print(f'Filtering articles from {start_datetime} to {end_datetime}')
         
-        if articles is None:
-            articles = Article.query.filter(
-                Article.publication_date >= start_datetime,
-                Article.publication_date <= end_datetime
-            ).order_by(Article.publication_date.desc()).all()
-            print(f'Retrieved {len(articles)} articles from database')
+        try:
+            if articles is None:
+                articles = Article.query.filter(
+                    Article.publication_date >= start_datetime,
+                    Article.publication_date <= end_datetime
+                ).order_by(Article.publication_date.desc()).all()
+                print(f'Retrieved {len(articles)} articles from database')
+        except Exception as e:
+            print(f'Error querying database: {str(e)}')
+            raise
+            
+        # Validate articles after database query
+        if not all(isinstance(article, Article) for article in articles):
+            raise TypeError('All items in articles must be Article instances')
         else:
             articles = [article for article in articles 
                        if article.publication_date 
@@ -179,9 +203,19 @@ def select_top_articles(articles: List[Article] = None, limit: int = 5, start_da
         titles = [article.title for article in articles]
         print(f'Processing {len(titles)} articles for ranking')
         
+        # Validate titles
+        if not titles:
+            raise ValueError('No article titles to process')
+        if not all(isinstance(title, str) for title in titles):
+            raise TypeError('All titles must be strings')
+            
         # Calculate TF-IDF scores
-        vectorizer = TfidfVectorizer()
-        tfidf_matrix = vectorizer.fit_transform(titles)
+        try:
+            vectorizer = TfidfVectorizer()
+            tfidf_matrix = vectorizer.fit_transform(titles)
+        except Exception as e:
+            print(f'Error calculating TF-IDF: {str(e)}')
+            raise ValueError('Failed to process article titles')
         
         # Keywords related to senior living industry
         industry_keywords = [
@@ -190,8 +224,18 @@ def select_top_articles(articles: List[Article] = None, limit: int = 5, start_da
         ]
         
         # Calculate relevance scores
-        keyword_vector = vectorizer.transform(industry_keywords)
-        relevance_scores = np.mean(cosine_similarity(tfidf_matrix, keyword_vector), axis=1)
+        try:
+            keyword_vector = vectorizer.transform(industry_keywords)
+            relevance_scores = np.mean(cosine_similarity(tfidf_matrix, keyword_vector), axis=1)
+            
+            # Validate scores
+            if not isinstance(relevance_scores, np.ndarray):
+                raise TypeError(f'Invalid relevance scores type: {type(relevance_scores)}')
+            if len(relevance_scores) != len(titles):
+                raise ValueError('Score count does not match title count')
+        except Exception as e:
+            print(f'Error calculating relevance scores: {str(e)}')
+            raise ValueError('Failed to calculate article relevance')
         
         # Calculate recency scores (normalize dates to 0-1 range)
         dates = [article.publication_date for article in articles]
@@ -226,11 +270,19 @@ def select_top_articles(articles: List[Article] = None, limit: int = 5, start_da
 
 def format_articles_html(articles: List[Article]) -> str:
     """Format articles as HTML content"""
-    if not articles:
-        return '<div><p>No articles available.</p></div>'
-    
-    html_parts = ['<div class="articles-container">']
-    
+    try:
+        if not articles:
+            return '<div><p>No articles available.</p></div>'
+        
+        if not isinstance(articles, list):
+            raise TypeError(f'Expected list of articles, got {type(articles)}')
+        
+        if not all(isinstance(article, Article) for article in articles):
+            raise TypeError('All items must be Article instances')
+            
+        html_parts = ['<div class="articles-container">']
+    except:
+        raise TypeError('Error formatting articles HTML')
     # Add date header
     current_date = datetime.now().strftime('%Y-%m-%d')
     html_parts.append(f'<h2>Senior Housing News - {current_date}</h2>')
