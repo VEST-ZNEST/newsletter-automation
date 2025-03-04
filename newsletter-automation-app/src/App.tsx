@@ -64,6 +64,12 @@ const App: React.FC = () => {
           const url = `http://localhost:5000/api/senior-housing/headlines?num_headlines=${inputNumHeadlines}&start_date=${inputDate}&end_date=${inputEndDate}`;
           const response = await fetch(url, {
             method: regenerate ? 'POST' : 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            credentials: 'include',
+            mode: 'cors'
           });
 
           if (!response.ok) {
