@@ -5,28 +5,83 @@ from mailchimp3 import MailChimp
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+import subprocess
+import json
+import tempfile
+import time
 from app import db
 from app.models import Article
 
-def scrape_articles() -> List[Article]:
-    """Scrape articles and store in database"""
-    from scrapy.crawler import CrawlerProcess
-    from scrapy.utils.project import get_project_settings
-    from seniornews.spiders.senior_living_spider import SeniorLivingNewsSpider
-    import json
-    
-    # Create a temporary file to store scraped items
-    output_file = 'temp_output.json'
-    
+def scrape_articles(start_date=None, end_date=None) -> List[Article]:
+    """Scrape articles and store in database within a date range"""
     try:
-        # Configure and run the spider
-        settings = get_project_settings()
-        settings['FEEDS'] = {output_file: {'format': 'json'}}
-        settings['LOG_LEVEL'] = 'INFO'  # Show more detailed logs
+        # Convert string dates to datetime objects with timezone if provided
+        if start_date:
+            start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+            start_datetime = start_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+            start_datetime = start_datetime.astimezone()
+        else:
+            start_datetime = (datetime.now() - timedelta(days=7)).astimezone()
+            
+        if end_date:
+            end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+            end_datetime = end_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
+            end_datetime = end_datetime.astimezone()
+        else:
+            end_datetime = datetime.now().astimezone()
+            
+        print(f'Scraping articles from {start_datetime} to {end_datetime}')
         
-        process = CrawlerProcess(settings)
-        process.crawl(SeniorLivingNewsSpider)
-        process.start()
+        # Create a temporary file for output
+        with tempfile.NamedTemporaryFile(mode='w+', suffix='.json', delete=False) as temp_file:
+            output_file = temp_file.name
+            print(f'Using temporary file: {output_file}')
+        
+        # Build the scrapy command with settings
+        settings = {
+            'FEEDS': {output_file: {'format': 'json'}},
+            'LOG_LEVEL': 'ERROR',
+            'START_DATE': start_datetime.isoformat(),
+            'END_DATE': end_datetime.isoformat(),
+            'CONCURRENT_REQUESTS': 32,
+            'CONCURRENT_REQUESTS_PER_DOMAIN': 16,
+            'DOWNLOAD_TIMEOUT': 15,
+            'COOKIES_ENABLED': False,
+            'RETRY_ENABLED': False,
+            'ROBOTSTXT_OBEY': False,
+            'TELNETCONSOLE_ENABLED': False
+        }
+        
+        # Convert settings to command line arguments
+        cmd = ['scrapy', 'crawl', 'senior_living_news']
+        for key, value in settings.items():
+            if key == 'FEEDS':
+                # Handle feeds setting specially
+                feed_uri = next(iter(value.keys()))
+                feed_format = value[feed_uri]['format']
+                cmd.extend(['-o', f'{feed_uri}'])
+            else:
+                cmd.extend(['-s', f'{key}={value}'])
+        
+        print('Starting spider crawl...')
+        start_time = time.time()
+        # Run the spider as a subprocess
+        try:
+            # Get the directory containing the spider
+            spider_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            result = subprocess.run(
+                cmd,
+                cwd=spider_dir,  # Run from the project directory
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            duration = time.time() - start_time
+            print(f'Spider finished successfully in {duration:.2f} seconds')
+        except subprocess.CalledProcessError as e:
+            duration = time.time() - start_time
+            print(f'Spider failed after {duration:.2f} seconds with error: {e.stderr}')
+            raise
         
         # Read the scraped items
         try:
@@ -71,21 +126,41 @@ def scrape_articles() -> List[Article]:
         try:
             if os.path.exists(output_file):
                 os.remove(output_file)
+                print(f'Cleaned up temporary file: {output_file}')
         except Exception as e:
-            print(f'Error removing temporary file: {str(e)}')
+            print(f'Error removing temporary file {output_file}: {str(e)}')
+        
+        # No need to stop reactor here since it's already stopped by the deferred callback
 
-def select_top_articles(articles: List[Article] = None, limit: int = 5) -> List[Article]:
-    """Select top articles based on relevance and recency. Only includes articles from the past 7 days."""
+def select_top_articles(articles: List[Article] = None, limit: int = 5, start_date=None, end_date=None) -> List[Article]:
+    """Select top articles based on relevance and recency within a date range."""
     try:
-        # Get articles from the past 7 days
-        week_ago = datetime.utcnow() - timedelta(days=7)
-        print(f'Filtering articles from {week_ago}')
+        # Convert string dates to datetime objects if provided
+        start_datetime = None
+        end_datetime = None
+        
+        if start_date:
+            start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+        else:
+            start_datetime = datetime.utcnow() - timedelta(days=7)  # Default to a week ago
+            
+        if end_date:
+            end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+        else:
+            end_datetime = datetime.utcnow()  # Default to current date
+            
+        print(f'Filtering articles from {start_datetime} to {end_datetime}')
         
         if articles is None:
-            articles = Article.query.filter(Article.publication_date >= week_ago).order_by(Article.publication_date.desc()).all()
+            articles = Article.query.filter(
+                Article.publication_date >= start_datetime,
+                Article.publication_date <= end_datetime
+            ).order_by(Article.publication_date.desc()).all()
             print(f'Retrieved {len(articles)} articles from database')
         else:
-            articles = [article for article in articles if article.publication_date and article.publication_date >= week_ago]
+            articles = [article for article in articles 
+                       if article.publication_date 
+                       and start_datetime <= article.publication_date <= end_datetime]
             print(f'Filtered to {len(articles)} articles from provided list')
             
         if not articles:

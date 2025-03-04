@@ -1,7 +1,6 @@
 import scrapy
 from datetime import datetime, timedelta
 from ..items import SeniorNewsItem
-
 class SeniorLivingNewsSpider(scrapy.Spider):
     name = "senior_living_news"
     allowed_domains = ["seniorhousingnews.com", "seniorlivingnews.com", 
@@ -35,14 +34,34 @@ class SeniorLivingNewsSpider(scrapy.Spider):
                 if link:
                     yield response.follow(link, self.parse_article)
 
-    def is_within_past_week(self, date_str):
+    def __init__(self, *args, **kwargs):
+        super(SeniorLivingNewsSpider, self).__init__(*args, **kwargs)
+        from scrapy.utils.project import get_project_settings
+        settings = get_project_settings()
+
+        
+        # Get date range from settings with defaults
+        self.start_date = settings.get('START_DATE') or (datetime.now() - timedelta(days=7))
+        self.end_date = settings.get('END_DATE') or datetime.now()
+        
+        # Ensure both dates have timezone info
+        if self.start_date.tzinfo is None:
+            self.start_date = self.start_date.replace(tzinfo=datetime.now().astimezone().tzinfo)
+        if self.end_date.tzinfo is None:
+            self.end_date = self.end_date.replace(tzinfo=datetime.now().astimezone().tzinfo)
+            
+        self.logger.info(f'Spider initialized with date range: {self.start_date} to {self.end_date}')
+    
+    def is_within_date_range(self, date_str):
         if not date_str:
             return False
         try:
             article_date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-            week_ago = datetime.now(article_date.tzinfo) - timedelta(days=7)
-            return article_date >= week_ago
-        except ValueError:
+            # Convert article_date to the same timezone as start_date
+            article_date = article_date.astimezone(self.start_date.tzinfo)
+            return self.start_date <= article_date <= self.end_date
+        except (ValueError, AttributeError) as e:
+            self.logger.error(f'Error parsing date {date_str}: {str(e)}')
             return False
 
     def parse_article(self, response):
@@ -65,8 +84,8 @@ class SeniorLivingNewsSpider(scrapy.Spider):
             
             # Clean and validate the item
             if item.get('title') and item.get('url') and item.get('publication_date'):
-                # Only yield the item if it's from the past week
-                if self.is_within_past_week(item['publication_date']):
+                # Only yield the item if it's within the date range
+                if self.is_within_date_range(item['publication_date']):
                     self.logger.info(f'Found recent article: {item["title"]} from {item["publication_date"]}')
                     yield item
                 else:
