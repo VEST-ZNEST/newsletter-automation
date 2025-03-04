@@ -21,7 +21,7 @@ ROBOTSTXT_OBEY = True
 
 # Maximize concurrent requests
 CONCURRENT_REQUESTS = 100
-CONCURRENT_REQUESTS_PER_DOMAIN = 16
+CONCURRENT_REQUESTS_PER_DOMAIN = 8
 
 # Reduce delays
 DOWNLOAD_DELAY = 0.5
@@ -107,3 +107,13 @@ AUTOTHROTTLE_ENABLED = True
 # Set settings whose default value is deprecated to a future-proof value
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+# Default date range for article scraping (in days)
+# Articles older than this many days will not be scraped by default
+DEFAULT_SCRAPE_DAYS = 30  # Change this to scrape articles from the last 30 days
+
+# Alternatively, you can set fixed start and end dates
+# These will override DEFAULT_SCRAPE_DAYS if uncommented
+# Format: YYYY-MM-DD
+# START_DATE = '2025-01-01'
+# END_DATE = '2025-03-04'

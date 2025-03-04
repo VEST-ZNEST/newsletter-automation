@@ -97,19 +97,31 @@ def scrape_articles(start_date=None, end_date=None) -> List[Article]:
         
         # Store articles in database
         articles = []
+        seen_urls = set()  # Track URLs we've already processed
+        
         for item in items:
             try:
+                # Skip if we've already seen this URL in this batch
+                if item['url'] in seen_urls:
+                    print(f'Skipping duplicate URL in batch: {item["url"]}')
+                    continue
+                seen_urls.add(item['url'])
+                
+                # This will either update existing article or create new one
                 article = Article.from_scrapy_item(item)
-                db.session.add(article)
                 articles.append(article)
+                
             except Exception as e:
                 print(f'Error processing article: {str(e)}')
                 continue
         
         if articles:
             try:
+                # Use merge instead of add to handle duplicates
+                for article in articles:
+                    db.session.merge(article)
                 db.session.commit()
-                print(f'Successfully stored {len(articles)} articles in database')
+                print(f'Successfully stored/updated {len(articles)} articles in database')
             except Exception as e:
                 print(f'Error committing to database: {str(e)}')
                 db.session.rollback()

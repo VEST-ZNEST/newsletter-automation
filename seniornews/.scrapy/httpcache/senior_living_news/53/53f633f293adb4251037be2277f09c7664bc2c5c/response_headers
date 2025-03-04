@@ -1,0 +1,14 @@
+Date: Tue, 04 Mar 2025 22:33:43 GMT
+Content-Type: text/plain; charset=utf-8
+Vary: Accept-Encoding
+X-Robots-Tag: noindex, follow
+Link: <https://seniorshousingbusiness.com/wp-json/>; rel="https://api.w.org/"
+Content-Encoding: gzip
+Cache-Control: max-age=14400
+Cf-Cache-Status: EXPIRED
+Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=TmW4qYiVQpkSb6BH%2FMP5xqBxbCU4iBw26XlkDw538D4hum4OUBRH59ETqGomq9JTQVA5EY1%2FKwBrumTdabJ0StwqClM3fpk%2BCztBizYFAFq6kL6oeWXtL66vljVE7B0wHXkV6V2JfQYY4J0Rsw%3D%3D"}],"group":"cf-nel","max_age":604800}
+Nel: {"success_fraction":0,"report_to":"cf-nel","max_age":604800}
+Server: cloudflare
+Cf-Ray: 91b4d63c991ae9e5-LAX
+Alt-Svc: h3=":443"; ma=86400
+Server-Timing: cfL4;desc="?proto=TCP&rtt=23098&min_rtt=18246&rtt_var=13543&sent=5&recv=6&lost=0&retrans=0&sent_bytes=2870&recv_bytes=861&delivery_rate=105509&cwnd=243&unsent_bytes=0&cid=263112ac29795d3c&ts=355&x=0"
