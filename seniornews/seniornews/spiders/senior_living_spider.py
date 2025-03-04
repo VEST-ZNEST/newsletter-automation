@@ -15,24 +15,34 @@ class SeniorLivingNewsSpider(scrapy.Spider):
     ]
 
     def parse(self, response):
-        # Extract links to articles from Senior Housing News
+        # Use follow_all for batch processing of links
         if 'seniorhousingnews.com' in response.url:
-            for article in response.css('article.post'):
-                link = article.css('h2.entry-title a::attr(href)').get()
-                if link:
-                    yield response.follow(link, self.parse_article)
+            # Extract all article links at once
+            article_links = response.css('article.post h2.entry-title a::attr(href)').getall()
+            yield from response.follow_all(article_links, self.parse_article)
 
-            # Follow pagination if available
-            next_page = response.css('a.next.page-numbers::attr(href)').get()
-            if next_page:
-                yield response.follow(next_page, self.parse)
+            # Handle pagination
+            next_pages = response.css('a.next.page-numbers::attr(href)').getall()
+            yield from response.follow_all(next_pages, self.parse)
         
-        # Add more website-specific parsing rules here
         elif 'mcknightsseniorliving.com' in response.url:
-            for article in response.css('div.article-preview'):
-                link = article.css('h2 a::attr(href)').get()
-                if link:
-                    yield response.follow(link, self.parse_article)
+            # Extract all article links at once
+            article_links = response.css('div.article-preview h2 a::attr(href)').getall()
+            yield from response.follow_all(article_links, self.parse_article)
+            
+            # Handle pagination
+            next_pages = response.css('a.next::attr(href)').getall()
+            yield from response.follow_all(next_pages, self.parse)
+            
+        elif 'seniorlivingnews.com' in response.url:
+            # Extract all article links at once
+            article_links = response.css('article h2 a::attr(href)').getall()
+            yield from response.follow_all(article_links, self.parse_article)
+            
+        elif 'seniorshousingbusiness.com' in response.url:
+            # Extract all article links at once
+            article_links = response.css('div.article a::attr(href)').getall()
+            yield from response.follow_all(article_links, self.parse_article)
 
     def __init__(self, *args, **kwargs):
         super(SeniorLivingNewsSpider, self).__init__(*args, **kwargs)

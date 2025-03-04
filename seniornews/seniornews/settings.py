@@ -19,19 +19,36 @@ USER_AGENT = "SeniorNewsBot (+https://www.example.com)"
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
-# Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+# Maximize concurrent requests
+CONCURRENT_REQUESTS = 100
+CONCURRENT_REQUESTS_PER_DOMAIN = 16
 
-# Configure a delay for requests for the same website (default: 0)
-# See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
-# See also autothrottle settings and docs
-DOWNLOAD_DELAY = 2
-# The download delay setting will honor only one of:
-#CONCURRENT_REQUESTS_PER_DOMAIN = 16
-#CONCURRENT_REQUESTS_PER_IP = 16
+# Reduce delays
+DOWNLOAD_DELAY = 0.5
+DOWNLOAD_TIMEOUT = 15
 
-# Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+# Enable DNS caching
+DNSCACHE_ENABLED = True
+
+# Disable unnecessary features
+COOKIES_ENABLED = False
+TELNETCONSOLE_ENABLED = False
+
+# Configure retries
+RETRY_ENABLED = True
+RETRY_TIMES = 3
+RETRY_HTTP_CODES = [500, 502, 503, 504, 408, 429]
+
+# Configure caching
+HTTPCACHE_ENABLED = True
+HTTPCACHE_EXPIRATION_SECS = 3600
+HTTPCACHE_DIR = 'httpcache'
+
+# Adjust AutoThrottle
+AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_START_DELAY = 0.5
+AUTOTHROTTLE_MAX_DELAY = 5
+AUTOTHROTTLE_TARGET_CONCURRENCY = 8
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
