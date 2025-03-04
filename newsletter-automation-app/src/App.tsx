@@ -47,6 +47,7 @@ const App: React.FC = () => {
           setHeadlines(fetchedHeadlines)
           // Update HTML content without delete buttons
           updateHtmlContent(fetchedHeadlines);
+        })
         break;
       }
       case "Senior Housing News":
