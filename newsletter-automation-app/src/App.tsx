@@ -35,18 +35,18 @@ const App: React.FC = () => {
         axios
           .get("http://localhost:5001/api/ai-news", {
             params: {
-              date_from: inputDate,
-              date_to: inputEndDate,
-              numHeadlines: inputNumHeadlines,
-            },
-          })
-          .then((response) => {
-            const fetchedHeadlines: string[] = response.data.headlines;
-            console.log("fetchedHeadlines: ", fetchedHeadlines);
-            setHeadlines(fetchedHeadlines);
-            // Update HTML content without delete buttons
-            updateHtmlContent(fetchedHeadlines);
-          });
+              date_from: inputDate,       
+              date_to: inputEndDate,            
+              numHeadlines: inputNumHeadlines, // number of headlines requested
+          },
+         })
+        .then((response) => {
+          const fetchedHeadlines: string[] = response.data.headlines;
+          console.log("fetchedHeadlines: ", fetchedHeadlines);
+          // Update state with the fetched headlines array
+          setHeadlines(fetchedHeadlines)
+          // Update HTML content without delete buttons
+          updateHtmlContent(fetchedHeadlines);
         break;
       }
       case "Senior Housing News":
