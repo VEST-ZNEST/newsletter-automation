@@ -1,20 +1,21 @@
-Date: Wed, 05 Mar 2025 01:31:10 GMT
+Date: Wed, 05 Mar 2025 02:52:54 GMT
 Content-Type: text/html; charset=UTF-8
-Cf-Ray: 91b5da2a49ca2f71-LAX
-Cf-Cache-Status: BYPASS
+Cf-Ray: 91b651e89c197c4f-LAX
+Cf-Cache-Status: HIT
 Cache-Control: public, max-age=0, s-maxage=3600
+Last-Modified: Wed, 05 Mar 2025 02:52:12 GMT
 Link: <https://www.seniorlivingnews.com/wp-json/>; rel="https://api.w.org/", <https://www.seniorlivingnews.com/wp-json/wp/v2/pages/688>; rel="alternate"; title="JSON"; type="application/json", <https://www.seniorlivingnews.com/>; rel=shortlink
 Vary: Accept-Encoding
 Cache-Tag: 094eb57d-888d-4a35-b068-b31fd2bddd30,17d939ce72922e7e09bf3711865a31701706bfb164a98f126d6425f686e2fbc8
 Ki-Cache-Tag: 094eb57d-888d-4a35-b068-b31fd2bddd30,17d939ce72922e7e09bf3711865a31701706bfb164a98f126d6425f686e2fbc8
 Ki-Cache-Type: Edge
-Ki-Cf-Cache-Status: SAVING
+Ki-Cf-Cache-Status: HIT
 Ki-Edge: v=20.3.2;mv=3.3.5
 X-Content-Type-Options: nosniff
 X-Edge-Location-Klb: 1
 X-Kinsta-Cache: HIT
-Set-Cookie: __cf_bm=FHpRKQC_hrUuoPshVElk_BNNled4TI4ah94B67dAThg-1741138270-1.0.1.1-TnkacnWsxnXXpnfo7WUIUjS6aTIOxXOOfpln336GJrYh6icns.3GTlpN3MPFV2tUBO.eKWIyHI4NoeSEXTsK8vAw3X8b43qkmU4Hh8pxnNI; path=/; expires=Wed, 05-Mar-25 02:01:10 GMT; domain=.www.seniorlivingnews.com; HttpOnly; Secure; SameSite=None
-Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=yAf66BrcVw2oV96K3RZ2nrty9LF1yLyb4PFOS7I6O09ZgZnWeoDsbnEduF5SF%2Fd%2BKZvMFRcaVjsz81VJ6C%2FJcOVC1HC1rPTC57fBgTxcmo%2FVHuo%2BMqf%2Bv8eQmMmYqORlrJw0BVOSgvAFMA%3D%3D"}],"group":"cf-nel","max_age":604800}
+Set-Cookie: __cf_bm=5DmzWJwLYyTcw7tWgdllw0AzD2puLOBDatiIz2gSqVc-1741143174-1.0.1.1-qXzXmEfRPF5n3S2CsB7vBHn5Ko5Rod0VC5ZW5opENv7oKuEaWuL92M_JnyGHXM8.s5Vi4Mvp12ZFtPJPTv44lzjL9gc4HH.W_GuTkP8NEJ4; path=/; expires=Wed, 05-Mar-25 03:22:54 GMT; domain=.www.seniorlivingnews.com; HttpOnly; Secure; SameSite=None
+Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=bb4RlnGvaVooqhd8YdxBiJZyQC5HqIUB7mtKEmELrqHFoHrvqftIQuiz5lHWdjuOomy3WlQwn3wfIYE%2B7yph540UY9CeoKbk8WDGdzhpEdLomZl%2FfSduyMIsEIjkZg4c4lGscZd7qIHbVg%3D%3D"}],"group":"cf-nel","max_age":604800}
 Nel: {"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}
 Server: cloudflare
 Content-Encoding: gzip
