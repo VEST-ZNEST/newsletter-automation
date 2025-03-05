@@ -1,9 +1,9 @@
 Content-Length: 0
-Date: Tue, 04 Mar 2025 22:07:19 GMT
+Date: Wed, 05 Mar 2025 01:31:09 GMT
 Content-Type: text/plain;charset=UTF-8
 Location: https://accounts.haymarketmedia.com/authcheck?gn=106&retUrl=https%3A%2F%2Fwww.mcknightsseniorliving.com%2F&NoCheck=true
 Set-Cookie: hmSsoCheck=true; path=/; SameSite=None; Secure
-Set-Cookie: __cf_bm=JrGMY.QvSRWqksDjDjIbEzhBanL5TCoJ8Pc5MeRAcNQ-1741126039-1.0.1.1-jMR4vFKHpsz113kVEbLUkzdab6drEB7ejq.sUo5FImHL7XcppAHMDlE0VQNKrZZOUdv1QQrgClb.NFENVGLOLQjK1BO3g4iPR8I7U05eEm4; path=/; expires=Tue, 04-Mar-25 22:37:19 GMT; domain=.mcknightsseniorliving.com; HttpOnly; Secure; SameSite=None
+Set-Cookie: __cf_bm=sNoO8r28COy6O5x0cQs._DthvKynUpafe.RgDBGcf1E-1741138269-1.0.1.1-FPhrrq3x.qbPnuHnZhg__9HO7PGEil2Pt7xD5kJU38j1qoXBU9wjnFKC8Rek1UXu4cvaGq.5MFplHD1Cn0hrq8W6NGJ4C.QdbTEOLNjfzA8; path=/; expires=Wed, 05-Mar-25 02:01:09 GMT; domain=.mcknightsseniorliving.com; HttpOnly; Secure; SameSite=None
 Vary: Accept-Encoding
 Server: cloudflare
-Cf-Ray: 91b4af9548a89e58-SJC
+Cf-Ray: 91b5da2a4aa1ce64-SJC

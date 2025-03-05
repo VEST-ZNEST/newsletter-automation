@@ -161,30 +161,41 @@ def select_top_articles(articles: List[Article] = None, limit: int = 5, start_da
             if not isinstance(start_date, str):
                 raise TypeError(f'start_date must be a string, got {type(start_date)}')
             try:
+                # Create naive datetime at start of day
                 start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+                start_datetime = start_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
             except ValueError as e:
                 raise ValueError(f'Invalid start_date format: {e}')
         else:
-            start_datetime = datetime.utcnow() - timedelta(days=7)  # Default to a week ago
+            # Default to a week ago, naive datetime
+            start_datetime = (datetime.now() - timedelta(days=7)).replace(tzinfo=None)
             
         if end_date:
             if not isinstance(end_date, str):
                 raise TypeError(f'end_date must be a string, got {type(end_date)}')
             try:
+                # Create naive datetime at end of day
                 end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+                end_datetime = end_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
             except ValueError as e:
                 raise ValueError(f'Invalid end_date format: {e}')
         else:
-            end_datetime = datetime.utcnow()  # Default to current date
+            # Default to current date, naive datetime
+            end_datetime = datetime.now().replace(tzinfo=None)
             
         print(f'Filtering articles from {start_datetime} to {end_datetime}')
         
         try:
             if articles is None:
-                articles = Article.query.filter(
-                    Article.publication_date >= start_datetime,
-                    Article.publication_date <= end_datetime
-                ).order_by(Article.publication_date.desc()).all()
+                # Get all articles and filter in Python to handle timezone issues
+                all_articles = Article.query.order_by(Article.publication_date.desc()).all()
+                articles = []
+                for article in all_articles:
+                    if article.publication_date:
+                        # Remove timezone info for comparison
+                        naive_date = article.publication_date.replace(tzinfo=None)
+                        if start_datetime <= naive_date <= end_datetime:
+                            articles.append(article)
                 print(f'Retrieved {len(articles)} articles from database')
         except Exception as e:
             print(f'Error querying database: {str(e)}')
@@ -196,7 +207,7 @@ def select_top_articles(articles: List[Article] = None, limit: int = 5, start_da
         else:
             articles = [article for article in articles 
                        if article.publication_date 
-                       and start_datetime <= article.publication_date <= end_datetime]
+                       and start_datetime <= article.publication_date.replace(tzinfo=None) <= end_datetime]
             print(f'Filtered to {len(articles)} articles from provided list')
             
         if not articles:
