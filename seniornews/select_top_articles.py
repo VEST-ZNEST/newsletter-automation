@@ -160,6 +160,7 @@ def main():
     # Rank and select top articles
     top_articles = rank_articles(articles)
     
+    '''
     # Format content for Mailchimp
     mailchimp_content = format_mailchimp_content(top_articles)
     
@@ -176,6 +177,6 @@ def main():
         print(f"Error sending to Mailchimp: {str(e)}")
     
     print("Newsletter content has been generated! Check newsletter_content.html")
-
+    '''
 if __name__ == "__main__":
     main()

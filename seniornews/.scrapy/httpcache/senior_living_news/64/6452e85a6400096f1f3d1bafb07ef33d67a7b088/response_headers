@@ -1,0 +1,29 @@
+Date: Thu, 06 Mar 2025 07:41:37 GMT
+Content-Type: text/plain; charset=utf-8
+Vary: Accept-Encoding
+X-Xss-Protection: 1; mode=block
+X-Xss-Protection: 1; mode=block
+X-Content-Type-Options: nosniff
+X-Content-Type-Options: nosniff
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Strict-Transport-Security: max-age=31536000
+Referrer-Policy: strict-origin-when-cross-origin
+X-Frame-Options: SAMEORIGIN
+Link: <https://www.argentum.org/wp-json/>; rel="https://api.w.org/"
+X-Tec-Api-Version: v1
+X-Tec-Api-Root: https://www.argentum.org/wp-json/tribe/events/v1/
+X-Tec-Api-Origin: https://www.argentum.org
+Expires: Fri, 07 Mar 2025 07:16:37 GMT
+Cache-Control: max-age=86400
+X-Nginx-Upstream-Cache-Status: STALE
+X-Server-Powered-By: Engintron
+Content-Encoding: gzip
+Cf-Cache-Status: HIT
+Age: 1500
+Last-Modified: Thu, 06 Mar 2025 07:16:37 GMT
+Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=SiJNkJ%2BuyQgTgZejA7W14Nk8lXS4wh1XFKIL6h07GNSo4esEPVBCr6P2tGqngVF0yDwLAYTqhI6in4koW8rbhAp7iPxrhYNNzwtG4ZpPiItrVAVi4iM6peAjPRX%2F%2FWmsk73h"}],"group":"cf-nel","max_age":604800}
+Nel: {"success_fraction":0,"report_to":"cf-nel","max_age":604800}
+Server: cloudflare
+Cf-Ray: 91c03635e839f96b-SJC
+Alt-Svc: h3=":443"; ma=86400
+Server-Timing: cfL4;desc="?proto=TCP&rtt=441570&min_rtt=360652&rtt_var=297081&sent=7&recv=6&lost=0&retrans=1&sent_bytes=2906&recv_bytes=851&delivery_rate=4091&cwnd=252&unsent_bytes=0&cid=38314ad05436926b&ts=1027&x=0"
