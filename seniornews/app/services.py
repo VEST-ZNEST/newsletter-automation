@@ -12,6 +12,18 @@ import time
 from app import db
 from app.models import Article
 
+# Import the default scrape days from settings
+try:
+    import sys
+    import os.path
+    # Add the seniornews directory to the python path
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    from seniornews.settings import DEFAULT_SCRAPE_DAYS
+except ImportError:
+    # Default number of days to look back if not specified
+    DEFAULT_SCRAPE_DAYS = 30
+    print(f"Using default DEFAULT_SCRAPE_DAYS={DEFAULT_SCRAPE_DAYS}")
+
 def scrape_articles(start_date=None, end_date=None) -> List[Article]:
     """Scrape articles and store in database within a date range"""
     try:
@@ -21,7 +33,7 @@ def scrape_articles(start_date=None, end_date=None) -> List[Article]:
             start_datetime = start_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
             start_datetime = start_datetime.astimezone()
         else:
-            start_datetime = (datetime.now() - timedelta(days=7)).astimezone()
+            start_datetime = (datetime.now() - timedelta(days=DEFAULT_SCRAPE_DAYS)).astimezone()
             
         if end_date:
             end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
@@ -147,6 +159,9 @@ def scrape_articles(start_date=None, end_date=None) -> List[Article]:
 def select_top_articles(articles: List[Article] = None, limit: int = 5, start_date=None, end_date=None) -> List[Article]:
     """Select top articles based on relevance and recency within a date range."""
     try:
+        # Log incoming parameters for debugging
+        print(f"select_top_articles called with: limit={limit}, start_date={start_date!r}, end_date={end_date!r}")
+        
         # Validate input types
         if articles is not None and not isinstance(articles, list):
             raise TypeError(f'articles must be a list, got {type(articles)}')
@@ -157,7 +172,8 @@ def select_top_articles(articles: List[Article] = None, limit: int = 5, start_da
         start_datetime = None
         end_datetime = None
         
-        if start_date:
+        # Handle start_date - treat empty string as None
+        if start_date and start_date.strip():
             if not isinstance(start_date, str):
                 raise TypeError(f'start_date must be a string, got {type(start_date)}')
             try:
@@ -167,10 +183,12 @@ def select_top_articles(articles: List[Article] = None, limit: int = 5, start_da
             except ValueError as e:
                 raise ValueError(f'Invalid start_date format: {e}')
         else:
-            # Default to a week ago, naive datetime
-            start_datetime = (datetime.now() - timedelta(days=7)).replace(tzinfo=None)
+            # Default to DEFAULT_SCRAPE_DAYS ago, naive datetime
+            start_datetime = (datetime.now() - timedelta(days=DEFAULT_SCRAPE_DAYS)).replace(tzinfo=None)
+            print(f"Using default start_date: {start_datetime} (DEFAULT_SCRAPE_DAYS={DEFAULT_SCRAPE_DAYS})")
             
-        if end_date:
+        # Handle end_date - treat empty string as None
+        if end_date and end_date.strip():
             if not isinstance(end_date, str):
                 raise TypeError(f'end_date must be a string, got {type(end_date)}')
             try:
@@ -182,6 +200,7 @@ def select_top_articles(articles: List[Article] = None, limit: int = 5, start_da
         else:
             # Default to current date, naive datetime
             end_datetime = datetime.now().replace(tzinfo=None)
+            print(f"Using default end_date: {end_datetime}")
             
         print(f'Filtering articles from {start_datetime} to {end_datetime}')
         
@@ -211,7 +230,8 @@ def select_top_articles(articles: List[Article] = None, limit: int = 5, start_da
             print(f'Filtered to {len(articles)} articles from provided list')
             
         if not articles:
-            print('No articles found within the past 7 days')
+            date_range_days = (end_datetime - start_datetime).days
+            print(f'No articles found within the specified date range of {date_range_days} days ({start_datetime.date()} to {end_datetime.date()})')
             return []
         
         # Reset previous selections

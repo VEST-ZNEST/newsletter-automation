@@ -26,14 +26,77 @@ def get_articles():
 
 @bp.route('/api/select-articles', methods=['POST'])
 def select_articles():
-    """Select top articles and prepare newsletter"""
+    """Select top articles and prepare newsletter with date restrictions"""
     try:
-        selected_articles = select_top_articles()
+        # Debug log to see what parameters are coming in
+        print(f"Request args: {request.args}")
+        print(f"Request form: {request.form}")
+        print(f"Request JSON: {request.json if request.is_json else 'Not JSON'}")
+        
+        # Get parameters from different possible sources (query string, form, JSON body)
+        # First try to get from query string (URL parameters)
+        start_date = request.args.get('start_date', type=str)
+        end_date = request.args.get('end_date', type=str)
+        num_headlines = request.args.get('num_headlines', type=int)
+        
+        # If not in query string, try to get from request body (JSON or form)
+        if start_date is None and request.is_json and 'start_date' in request.json:
+            start_date = request.json.get('start_date')
+        if end_date is None and request.is_json and 'end_date' in request.json:
+            end_date = request.json.get('end_date')
+        if num_headlines is None:
+            if request.is_json and 'num_headlines' in request.json:
+                num_headlines = request.json.get('num_headlines')
+            else:
+                num_headlines = 5  # Default value
+                
+        # If still not found, try form data
+        if start_date is None and 'start_date' in request.form:
+            start_date = request.form.get('start_date')
+        if end_date is None and 'end_date' in request.form:
+            end_date = request.form.get('end_date')
+        if num_headlines is None and 'num_headlines' in request.form:
+            num_headlines = request.form.get('num_headlines', type=int)
+        
+        # Log what we found
+        print(f"Parsed parameters - start_date: {start_date}, end_date: {end_date}, num_headlines: {num_headlines}")
+        
+        # Validate num_headlines
+        if not isinstance(num_headlines, int) or num_headlines <= 0:
+            return jsonify({'error': 'num_headlines must be a positive integer'}), 400
+            
+        # Parse dates if provided
+        if start_date or end_date:
+            try:
+                if start_date:
+                    # Validate date format
+                    datetime.strptime(start_date, '%Y-%m-%d')
+                if end_date:
+                    # Validate date format
+                    datetime.strptime(end_date, '%Y-%m-%d')
+            except ValueError:
+                return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+        
+        # Debug - what values are we passing to select_top_articles?
+        print(f"About to call select_top_articles with: limit={num_headlines!r}, start_date={start_date!r}, end_date={end_date!r}")
+        
+        # Ensure these values are actually strings, not some other type
+        if start_date is not None and not isinstance(start_date, str):
+            start_date = str(start_date)
+            print(f"Converted start_date to string: {start_date!r}")
+        if end_date is not None and not isinstance(end_date, str):
+            end_date = str(end_date)
+            print(f"Converted end_date to string: {end_date!r}")
+            
+        # Select top articles with date restrictions
+        selected_articles = select_top_articles(limit=num_headlines, start_date=start_date, end_date=end_date)
+        
         return jsonify({
             'message': 'Successfully selected top articles',
             'articles': [article.to_dict() for article in selected_articles]
         })
     except Exception as e:
+        print(f'Error in select_articles: {str(e)}')
         return jsonify({'error': str(e)}), 500  
 
 @bp.route('/api/send-newsletter', methods=['POST'])
@@ -52,17 +115,53 @@ def create_newsletter():
 def get_senior_housing_headlines():
     """Get or refresh Senior Housing News headlines within a date range"""
     try:
-        # Validate and parse num_headlines
-        try:
-            num_headlines = request.args.get('num_headlines', default=5, type=int)
-            if not isinstance(num_headlines, int) or num_headlines <= 0:
-                return jsonify({'error': 'num_headlines must be a positive integer'}), 400
-        except (TypeError, ValueError):
-            return jsonify({'error': 'Invalid num_headlines parameter'}), 400
-            
-        # Get and validate dates
+        # Debug log to see what parameters are coming in
+        print(f"Request method: {request.method}")
+        print(f"Request args: {request.args}")
+        print(f"Request form: {request.form}")
+        print(f"Request JSON: {request.json if request.is_json else 'Not JSON'}")
+        
+        # Get parameters from different possible sources (query string, form, JSON body)
+        # First try to get from query string (URL parameters)
         start_date = request.args.get('start_date', type=str)
         end_date = request.args.get('end_date', type=str)
+        num_headlines = request.args.get('num_headlines', type=int)
+        
+        # If not in query string, try to get from request body (JSON or form)
+        if request.method == 'POST':
+            if start_date is None and request.is_json and 'start_date' in request.json:
+                start_date = request.json.get('start_date')
+            if end_date is None and request.is_json and 'end_date' in request.json:
+                end_date = request.json.get('end_date')
+            if num_headlines is None and request.is_json and 'num_headlines' in request.json:
+                num_headlines = request.json.get('num_headlines')
+                
+            # If still not found, try form data
+            if start_date is None and 'start_date' in request.form:
+                start_date = request.form.get('start_date')
+            if end_date is None and 'end_date' in request.form:
+                end_date = request.form.get('end_date')
+            if num_headlines is None and 'num_headlines' in request.form:
+                num_headlines = request.form.get('num_headlines', type=int)
+        
+        # Default if not provided
+        if num_headlines is None:
+            num_headlines = 5
+        
+        # Log what we found
+        print(f"Parsed parameters - start_date: {start_date!r}, end_date: {end_date!r}, num_headlines: {num_headlines!r}")
+            
+        # Validate num_headlines
+        if not isinstance(num_headlines, int) or num_headlines <= 0:
+            return jsonify({'error': 'num_headlines must be a positive integer'}), 400
+            
+        # Ensure these values are actually strings, not some other type
+        if start_date is not None and not isinstance(start_date, str):
+            start_date = str(start_date)
+            print(f"Converted start_date to string: {start_date!r}")
+        if end_date is not None and not isinstance(end_date, str):
+            end_date = str(end_date)
+            print(f"Converted end_date to string: {end_date!r}")
         
         # Parse dates if provided
         start_datetime = None

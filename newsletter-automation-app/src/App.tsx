@@ -25,9 +25,104 @@ const App: React.FC = () => {
   const [topic, setTopic] = useState("AI Headlines");
   const [numHeadlines, setNumHeadlines] = useState(5);
 
+  // Function to handle regenerating articles using the select-articles endpoint
+  const handleRegenerateArticles = async () => {
+    if (!inputDate || inputNumHeadlines <= 0) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    // Update states when regenerate is pressed
+    setDate(inputDate);
+    setNumHeadlines(inputNumHeadlines);
+    setTopic(inputTopic);
+
+    try {
+      console.log('Regenerating articles with date restrictions...');
+      console.log(`Using parameters - start_date: ${inputDate}, end_date: ${inputEndDate}, num_headlines: ${inputNumHeadlines}`);
+      
+      // Send parameters in the request body as JSON instead of in the URL
+      const response = await fetch('http://localhost:5000/api/select-articles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          start_date: inputDate,
+          end_date: inputEndDate,
+          num_headlines: inputNumHeadlines
+        }),
+        credentials: 'include',
+        mode: 'cors'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to regenerate articles: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Now get the updated articles with HTML content
+      console.log('Getting headlines with same date parameters...');
+      const headlinesResponse = await fetch('http://localhost:5000/api/senior-housing/headlines', {
+        method: 'POST', // Changed to POST to send data in body
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          start_date: inputDate,
+          end_date: inputEndDate,
+          num_headlines: inputNumHeadlines
+        }),
+        credentials: 'include',
+        mode: 'cors'
+      });
+
+      if (!headlinesResponse.ok) {
+        throw new Error(`Failed to fetch headlines: ${headlinesResponse.statusText}`);
+      }
+
+      const headlinesResult = await headlinesResponse.json();
+      if (headlinesResult.error) {
+        throw new Error(headlinesResult.error);
+      }
+
+      setData({
+        articles: headlinesResult.articles.map((article: any) => ({
+          title: article.title,
+          url: article.url,
+          author: article.author,
+          publicationDate: new Date(article.publication_date).toLocaleDateString(),
+        })),
+        htmlContent: headlinesResult.html_content
+      });
+
+      setHeadlines(headlinesResult.articles.map((article: any) => article.title));
+      setHtmlContent(headlinesResult.html_content);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      console.error('Error regenerating articles:', error);
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGetHeadlines = async (regenerate: boolean = false) => {
     if (!inputDate || inputNumHeadlines <= 0) {
       return;
+    }
+
+    // If regenerate is true, use the dedicated regenerate function
+    if (regenerate && inputTopic === "Senior Housing News") {
+      return handleRegenerateArticles();
     }
 
     setIsLoading(true);
@@ -61,13 +156,20 @@ const App: React.FC = () => {
 
         case "Senior Housing News": {
           console.log('Fetching from backend...');
-          const url = `http://localhost:5000/api/senior-housing/headlines?num_headlines=${inputNumHeadlines}&start_date=${inputDate}&end_date=${inputEndDate}`;
-          const response = await fetch(url, {
-            method: regenerate ? 'POST' : 'GET',
+          console.log(`Using parameters - start_date: ${inputDate}, end_date: ${inputEndDate}, num_headlines: ${inputNumHeadlines}`);
+          
+          // Send parameters in the request body as JSON
+          const response = await fetch('http://localhost:5000/api/senior-housing/headlines', {
+            method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
+            body: JSON.stringify({
+              start_date: inputDate,
+              end_date: inputEndDate,
+              num_headlines: inputNumHeadlines
+            }),
             credentials: 'include',
             mode: 'cors'
           });

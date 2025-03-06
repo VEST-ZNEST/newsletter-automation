@@ -48,35 +48,78 @@ class SeniorLivingNewsSpider(scrapy.Spider):
 
     def __init__(self, start_date=None, end_date=None, *args, **kwargs):
         super(SeniorLivingNewsSpider, self).__init__(*args, **kwargs)
-        # Convert date strings to datetime objects if provided
-        self.start_date = datetime.strptime(start_date, '%Y-%m-%d').date() if start_date else None
-        self.end_date = datetime.strptime(end_date, '%Y-%m-%d').date() if end_date else None
         from scrapy.utils.project import get_project_settings
         settings = get_project_settings()
-
         
         # Get date range from settings with defaults
         default_days = settings.get('DEFAULT_SCRAPE_DAYS', 30)  # Default to 30 days if not set
         
-        # Handle START_DATE from settings
-        settings_start_date = settings.get('START_DATE')
-        if settings_start_date:
-            if isinstance(settings_start_date, str):
-                self.start_date = datetime.strptime(settings_start_date, '%Y-%m-%d')
-            else:
-                self.start_date = settings_start_date
+        # Priority for date parameters:
+        # 1. Command line arguments (start_date/end_date)
+        # 2. Settings.py START_DATE/END_DATE
+        # 3. Default (now - default_days to now)
+        
+        # Handle start date
+        if start_date:  # Command line argument
+            try:
+                self.start_date = datetime.strptime(start_date, '%Y-%m-%d')
+                self.logger.info(f'Using command line start_date: {self.start_date}')
+            except ValueError:
+                self.logger.error(f'Invalid start_date format: {start_date}, using default')
+                self.start_date = None
         else:
-            self.start_date = datetime.now() - timedelta(days=default_days)
+            self.start_date = None
             
-        # Handle END_DATE from settings
-        settings_end_date = settings.get('END_DATE')
-        if settings_end_date:
-            if isinstance(settings_end_date, str):
-                self.end_date = datetime.strptime(settings_end_date, '%Y-%m-%d')
-            else:
-                self.end_date = settings_end_date
+        # If start_date not set via command line, check settings
+        if self.start_date is None:
+            settings_start_date = settings.get('START_DATE')
+            if settings_start_date:
+                if isinstance(settings_start_date, str):
+                    try:
+                        self.start_date = datetime.strptime(settings_start_date, '%Y-%m-%d')
+                        self.logger.info(f'Using settings START_DATE: {self.start_date}')
+                    except ValueError:
+                        self.logger.error(f'Invalid settings START_DATE format: {settings_start_date}')
+                        self.start_date = None
+                else:
+                    self.start_date = settings_start_date
+                    self.logger.info(f'Using settings START_DATE object: {self.start_date}')
+        
+        # If still not set, use default
+        if self.start_date is None:
+            self.start_date = datetime.now() - timedelta(days=default_days)
+            self.logger.info(f'Using default start_date (now - {default_days} days): {self.start_date}')
+            
+        # Handle end date with similar priority logic
+        if end_date:  # Command line argument
+            try:
+                self.end_date = datetime.strptime(end_date, '%Y-%m-%d')
+                self.logger.info(f'Using command line end_date: {self.end_date}')
+            except ValueError:
+                self.logger.error(f'Invalid end_date format: {end_date}, using default')
+                self.end_date = None
         else:
+            self.end_date = None
+            
+        # If end_date not set via command line, check settings
+        if self.end_date is None:
+            settings_end_date = settings.get('END_DATE')
+            if settings_end_date:
+                if isinstance(settings_end_date, str):
+                    try:
+                        self.end_date = datetime.strptime(settings_end_date, '%Y-%m-%d')
+                        self.logger.info(f'Using settings END_DATE: {self.end_date}')
+                    except ValueError:
+                        self.logger.error(f'Invalid settings END_DATE format: {settings_end_date}')
+                        self.end_date = None
+                else:
+                    self.end_date = settings_end_date
+                    self.logger.info(f'Using settings END_DATE object: {self.end_date}')
+        
+        # If still not set, use default
+        if self.end_date is None:
             self.end_date = datetime.now()
+            self.logger.info(f'Using default end_date (now): {self.end_date}')
         
         # Ensure both dates have timezone info
         if self.start_date.tzinfo is None:
