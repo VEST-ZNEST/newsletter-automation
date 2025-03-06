@@ -334,10 +334,8 @@ def format_articles_html(articles: List[Article]) -> str:
     html_parts.append('<ul class="articles-list">')
     for article in articles:
         html_parts.append('<li class="article-item">')
-        html_parts.append(f'<h3><a href="{article.url}" target="_blank">{article.title}</a></h3>')
-        if article.author:
-            html_parts.append(f'<p class="article-meta">By {article.author}</p>')
-        html_parts.append(f'<p class="article-meta">Published: {article.publication_date.strftime("%Y-%m-%d")}</p>')
+        # Only include the title with hyperlink, no author or publication date
+        html_parts.append(f'<a href="{article.url}" target="_blank">{article.title}</a>')
         html_parts.append('</li>')
     html_parts.append('</ul>')
     

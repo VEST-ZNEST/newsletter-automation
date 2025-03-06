@@ -3,12 +3,25 @@ import './App.css';
 import zNestLogo from './assets/znest-logo.png'; // Adjust the path as necessary
 import axios from 'axios';
 
+// Define interfaces for type safety
+interface Article {
+  title: string;
+  url: string;
+  author?: string;
+  publicationDate?: string;
+}
+
+interface NewsData {
+  articles: Article[];
+  htmlContent: string;
+}
+
 const App: React.FC = () => {
   // Get today's date in the format YYYY-MM-DD
   const today = new Date().toISOString().split('T')[0];
 
   // State variables
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<NewsData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [headlines, setHeadlines] = useState<string[]>([]);
@@ -115,7 +128,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleGetHeadlines = async (regenerate: boolean = false) => {
+  const handleGetHeadlines = (regenerate: boolean = false) => {
     if (!inputDate || inputNumHeadlines <= 0) {
       return;
     }
@@ -133,7 +146,6 @@ const App: React.FC = () => {
     setNumHeadlines(inputNumHeadlines);
     setTopic(inputTopic);
 
-
     switch (inputTopic) {
       case "AI Headlines": {
         axios
@@ -142,84 +154,115 @@ const App: React.FC = () => {
               date_from: inputDate,       
               date_to: inputEndDate,            
               numHeadlines: inputNumHeadlines, // number of headlines requested
-          },
-         })
-        .then((response) => {
-          const fetchedHeadlines: string[] = response.data.headlines;
-          console.log("fetchedHeadlines: ", fetchedHeadlines);
-          // Update state with the fetched headlines array
-          setHeadlines(fetchedHeadlines)
-          // Update HTML content without delete buttons
-          updateHtmlContent(fetchedHeadlines);
-        })
-        break;
-        }
-
-        case "Senior Housing News": {
-          console.log('Fetching from backend...');
-          console.log(`Using parameters - start_date: ${inputDate}, end_date: ${inputEndDate}, num_headlines: ${inputNumHeadlines}`);
-          
-          // Send parameters in the request body as JSON
-          const response = await fetch('http://localhost:5000/api/senior-housing/headlines', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
             },
-            body: JSON.stringify({
-              start_date: inputDate,
-              end_date: inputEndDate,
-              num_headlines: inputNumHeadlines
-            }),
-            credentials: 'include',
-            mode: 'cors'
+          })
+          .then((response) => {
+            const fetchedHeadlines: string[] = response.data.headlines;
+            console.log("fetchedHeadlines: ", fetchedHeadlines);
+            // Update state with the fetched headlines array
+            setHeadlines(fetchedHeadlines);
+            // Update HTML content without delete buttons
+            updateHtmlContent(fetchedHeadlines);
+          })
+          .catch((error) => {
+            const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+            console.error('Error fetching AI headlines:', error);
+            setError(errorMessage);
+            setData(null);
+            setHeadlines([]);
+          })
+          .finally(() => {
+            setIsLoading(false);
           });
+        break;
+      }
 
+      case "Senior Housing News": {
+        console.log('Fetching from backend...');
+        console.log(`Using parameters - start_date: ${inputDate}, end_date: ${inputEndDate}, num_headlines: ${inputNumHeadlines}`);
+        
+        // Send parameters in the request body as JSON
+        fetch('http://localhost:5000/api/senior-housing/headlines', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            start_date: inputDate,
+            end_date: inputEndDate,
+            num_headlines: inputNumHeadlines
+          }),
+          credentials: 'include',
+          mode: 'cors'
+        })
+        .then(response => {
           if (!response.ok) {
             throw new Error(`Failed to fetch headlines: ${response.statusText}`);
           }
-
-          const result = await response.json();
+          return response.json();
+        })
+        .then(result => {
           if (result.error) {
             throw new Error(result.error);
           }
 
+          // Create articles with title and url only
           setData({
             articles: result.articles.map((article: any) => ({
               title: article.title,
-              url: article.url,
-              author: article.author,
-              publicationDate: new Date(article.publication_date).toLocaleDateString(),
+              url: article.url
             })),
             htmlContent: result.html_content
           });
 
           setHeadlines(result.articles.map((article: any) => article.title));
           setHtmlContent(result.html_content);
-          break;
-        }
-
-        case "For-Sale Listings":
-          // TODO(harris): get top {numHeadlines} headlines on day {date}
-          break;
-
-        default:
-          throw new Error(`Unsupported topic: ${inputTopic}`);
+        })
+        .catch(error => {
+          const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+          console.error('Error fetching Senior Housing headlines:', error);
+          setError(errorMessage);
+          setData(null);
+          setHeadlines([]);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+        break;
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      console.error('Error fetching headlines:', error);
-      setError(errorMessage);
-      setData(null);
-      setHeadlines([]);
-    } finally {
-      setIsLoading(false);
+
+      case "For-Sale Listings":
+        // TODO(harris): get top {numHeadlines} headlines on day {date}
+        setIsLoading(false);
+        break;
+
+      default:
+        console.error(`Unsupported topic: ${inputTopic}`);
+        setError(`Unsupported topic: ${inputTopic}`);
+        setIsLoading(false);
     }
   };
 
   const handleDeleteHeadline = (indexToDelete: number) => {
+    // Get the headline being deleted
+    const headlineToDelete = headlines[indexToDelete];
+    
+    // Update the headlines list
     const updatedHeadlines = headlines.filter((_, index) => index !== indexToDelete);
     setHeadlines(updatedHeadlines);
+    
+    // If we have data with articles (Senior Housing News case)
+    if (data && data.articles) {
+      // Filter out the deleted article from the data
+      const updatedArticles = data.articles.filter((article: Article) => article.title !== headlineToDelete);
+      
+      // Update the data state with filtered articles
+      setData({
+        ...data,
+        articles: updatedArticles
+      });
+    }
     
     // Update HTML content without delete buttons
     updateHtmlContent(updatedHeadlines);
@@ -227,10 +270,23 @@ const App: React.FC = () => {
 
   // Update HTML content without delete buttons
   const updateHtmlContent = (headlinesList: string[]) => {
-    const content = `<div>\n<ul>\n    ${headlinesList.map(h => 
-      `<li style="text-align: left;">${h}</li>`
-    ).join('\n    ')}\n  </ul>\n</div>`;
-    setHtmlContent(content);
+    // For Senior Housing News, we expect data to have articles with urls
+    if (topic === "Senior Housing News" && data && data.articles) {
+      // Create HTML with hyperlinks - only include articles whose titles are in the headlinesList
+      const content = `<div>\n<ul>\n    ${data.articles
+        .filter((article: Article) => headlinesList.includes(article.title)) // Only include non-deleted headlines
+        .map((article: Article) => 
+          `<li style="text-align: left;"><a href="${article.url}" target="_blank">${article.title}</a></li>`
+        )
+        .join('\n    ')}\n  </ul>\n</div>`;
+      setHtmlContent(content);
+    } else {
+      // For other topics, just use the headlines as plain text
+      const content = `<div>\n<ul>\n    ${headlinesList.map(h => 
+        `<li style="text-align: left;">${h}</li>`
+      ).join('\n    ')}\n  </ul>\n</div>`;
+      setHtmlContent(content);
+    }
   };
 
   // Add direct click handler using useRef and useEffect
@@ -341,7 +397,7 @@ const App: React.FC = () => {
               marginTop: '20px',
               padding: '5px 10px'
             }} 
-            onClick={handleGetHeadlines}
+            onClick={(e) => handleGetHeadlines()}
           >
             Get Headlines
           </button>
@@ -371,7 +427,16 @@ const App: React.FC = () => {
                 <ul style={{ paddingLeft: '20px', listStyleType: 'disc' }}>
                   {headlines.map((headline, index) => (
                     <li key={index} style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ flex: 1, textAlign: 'left' }} dangerouslySetInnerHTML={{ __html: headline }}></span>
+                      <span style={{ flex: 1, textAlign: 'left' }}>
+                        {topic === "Senior Housing News" && data && data.articles ? (
+                          // Find the matching article to get the URL
+                          data.articles.find((a: Article) => a.title === headline) ? (
+                            <a href={data.articles.find((a: Article) => a.title === headline)?.url} target="_blank" rel="noopener noreferrer">
+                              {headline}
+                            </a>
+                          ) : headline
+                        ) : headline}
+                      </span>
                       <button 
                         onClick={() => handleDeleteHeadline(index)}
                         style={{
