@@ -1,14 +1,14 @@
-Date: Wed, 05 Mar 2025 02:52:55 GMT
+Date: Wed, 05 Mar 2025 08:17:27 GMT
 Content-Type: text/html; charset=UTF-8
 X-Powered-By: WP Engine
-Expires: Wed, 05 Mar 2025 03:52:54 GMT
+Expires: Wed, 05 Mar 2025 08:25:31 GMT
 X-Redirect-By: WordPress
 Location: https://seniorhousingnews.com/
 X-Cacheable: bot
 Cache-Control: max-age=10800, must-revalidate
-X-Cache: MISS
+X-Cache: HIT: 1
 X-Cache-Group: bot
 Cf-Cache-Status: DYNAMIC
 Server: cloudflare
-Cf-Ray: 91b651e898edd7a7-LAX
+Cf-Ray: 91b82d521de4528f-LAX
 Alt-Svc: h3=":443"; ma=86400
