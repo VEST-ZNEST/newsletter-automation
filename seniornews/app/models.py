@@ -32,14 +32,21 @@ class Article(db.Model):
             existing.title = item['title']
             existing.author = item.get('author')
             if 'publication_date' in item:
-                existing.publication_date = datetime.fromisoformat(item['publication_date'].replace('Z', '+00:00'))
+                # Convert to datetime and ensure it's naive (no timezone)
+                dt = datetime.fromisoformat(item['publication_date'].replace('Z', '+00:00'))
+                existing.publication_date = dt.replace(tzinfo=None)
             return existing
         
         # Create new article if it doesn't exist
+        pub_date = None
+        if 'publication_date' in item:
+            # Convert to datetime and ensure it's naive (no timezone)
+            dt = datetime.fromisoformat(item['publication_date'].replace('Z', '+00:00'))
+            pub_date = dt.replace(tzinfo=None)
+            
         return Article(
             title=item['title'],
             url=item['url'],
             author=item.get('author'),
-            publication_date=datetime.fromisoformat(item['publication_date'].replace('Z', '+00:00'))
-            if 'publication_date' in item else None
+            publication_date=pub_date
         )

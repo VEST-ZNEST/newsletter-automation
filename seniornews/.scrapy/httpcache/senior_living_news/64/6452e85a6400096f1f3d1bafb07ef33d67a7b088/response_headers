@@ -1,4 +1,4 @@
-Date: Tue, 04 Mar 2025 22:33:43 GMT
+Date: Thu, 06 Mar 2025 07:41:37 GMT
 Content-Type: text/plain; charset=utf-8
 Vary: Accept-Encoding
 X-Xss-Protection: 1; mode=block
@@ -13,17 +13,17 @@ Link: <https://www.argentum.org/wp-json/>; rel="https://api.w.org/"
 X-Tec-Api-Version: v1
 X-Tec-Api-Root: https://www.argentum.org/wp-json/tribe/events/v1/
 X-Tec-Api-Origin: https://www.argentum.org
-Expires: Wed, 05 Mar 2025 04:01:08 GMT
+Expires: Fri, 07 Mar 2025 07:16:37 GMT
 Cache-Control: max-age=86400
-X-Nginx-Upstream-Cache-Status: UPDATING
+X-Nginx-Upstream-Cache-Status: STALE
 X-Server-Powered-By: Engintron
 Content-Encoding: gzip
 Cf-Cache-Status: HIT
-Age: 66755
-Last-Modified: Tue, 04 Mar 2025 04:01:08 GMT
-Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=1hUtfCEam%2FJIvF%2BOYbhKgtw%2BW4VzP1jqZeWA21YEBLLI2u9tYprbeYZthoh%2BW0OSz%2B7UP%2BuXTT7u10pUJs91nr8aWyQ6GPcsYWmCNxUA04EMR3hlTYpM7AVD85JCyKpA2ufg"}],"group":"cf-nel","max_age":604800}
+Age: 1500
+Last-Modified: Thu, 06 Mar 2025 07:16:37 GMT
+Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=SiJNkJ%2BuyQgTgZejA7W14Nk8lXS4wh1XFKIL6h07GNSo4esEPVBCr6P2tGqngVF0yDwLAYTqhI6in4koW8rbhAp7iPxrhYNNzwtG4ZpPiItrVAVi4iM6peAjPRX%2F%2FWmsk73h"}],"group":"cf-nel","max_age":604800}
 Nel: {"success_fraction":0,"report_to":"cf-nel","max_age":604800}
 Server: cloudflare
-Cf-Ray: 91b4d63c991eeb22-SJC
+Cf-Ray: 91c03635e839f96b-SJC
 Alt-Svc: h3=":443"; ma=86400
-Server-Timing: cfL4;desc="?proto=TCP&rtt=171956&min_rtt=66732&rtt_var=94330&sent=4&recv=5&lost=0&retrans=0&sent_bytes=2828&recv_bytes=851&delivery_rate=61589&cwnd=253&unsent_bytes=0&cid=92e63139f64323dd&ts=82&x=0"
+Server-Timing: cfL4;desc="?proto=TCP&rtt=441570&min_rtt=360652&rtt_var=297081&sent=7&recv=6&lost=0&retrans=1&sent_bytes=2906&recv_bytes=851&delivery_rate=4091&cwnd=252&unsent_bytes=0&cid=38314ad05436926b&ts=1027&x=0"

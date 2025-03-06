@@ -1,4 +1,4 @@
-Date: Tue, 04 Mar 2025 22:33:43 GMT
+Date: Thu, 06 Mar 2025 07:41:37 GMT
 Content-Type: text/plain; charset=utf-8
 Vary: Accept-Encoding
 Vary: Accept-Encoding
@@ -13,13 +13,13 @@ Link: <https://www.mcknightsseniorliving.com/wp-json/>; rel="https://api.w.org/"
 X-Powered-By: WP Engine
 X-Cacheable: CacheAlways: forever
 Cache-Control: public, max-age=172800
-X-Cache: HIT: 3
+X-Cache: HIT: 5
 Content-Security-Policy: frame-ancestors 'self' https://www.mycme.com/ https://mycmesandbox.thoughtindustries.com https://nacesandbox.thoughtindustries.com https://www.naceonline.com/
-Last-Modified: Tue, 04 Mar 2025 20:02:36 GMT
+Last-Modified: Thu, 06 Mar 2025 07:32:04 GMT
 Cf-Cache-Status: HIT
-Age: 7746
-Expires: Thu, 06 Mar 2025 22:33:43 GMT
-Set-Cookie: __cf_bm=2MdMTugIpJ214HWujToBFptUjxRpxVbi_D7XzZyCHwk-1741127623-1.0.1.1-UC8p68nIT.yGqG9aUgLdSH2QDs4vFAad9zoHK2s_j5NSHQvqe.etX3fQ3sBgXfkQd2bn1VD9YickCXe502g6MR0hOjMusDdXD8XrVMaxyqw; path=/; expires=Tue, 04-Mar-25 23:03:43 GMT; domain=.mcknightsseniorliving.com; HttpOnly; Secure; SameSite=None
+Age: 456
+Expires: Sat, 08 Mar 2025 07:41:37 GMT
+Set-Cookie: __cf_bm=B4y800UgXoj58UCz6h4bvvQBx6srZGNf80GZdCp8XXs-1741246897-1.0.1.1-yzUB5dpopHYbV2og6QNCuQWkhk93sZ6dUa6_s2P4cAqMfPIT9wg2ZBAIi3Tk5DcmPRWpRnbpX5WX14AMoIAEz7lKV2xbrwWNb95JS5lTBso; path=/; expires=Thu, 06-Mar-25 08:11:37 GMT; domain=.mcknightsseniorliving.com; HttpOnly; Secure; SameSite=None
 Server: cloudflare
-Cf-Ray: 91b4d63c995aed3d-SJC
+Cf-Ray: 91c03635ea09f9f9-SJC
 Content-Encoding: gzip
