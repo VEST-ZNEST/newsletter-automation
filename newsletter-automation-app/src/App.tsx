@@ -7,28 +7,132 @@ const App: React.FC = () => {
   // Get today's date in the format YYYY-MM-DD
   const today = new Date().toISOString().split('T')[0];
 
-  const [date, setDate] = useState(today);
-  const [numHeadlines, setNumHeadlines] = useState<number>(5);
+  // State variables
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [headlines, setHeadlines] = useState<string[]>([]);
-  const [htmlContent, setHtmlContent] = useState<string | null>(null);
-  const [showHtml, setShowHtml] = useState(false);
-  const [topic, setTopic] = useState("AI Headlines"); // Default topic
+  const [htmlContent, setHtmlContent] = useState('');
 
-  // Store input values separately until "Get Headlines" is clicked
+  // Input state
   const [inputDate, setInputDate] = useState(today);
   const [inputEndDate, setInputEndDate] = useState(today);
   const [inputNumHeadlines, setInputNumHeadlines] = useState<number>(5);
   const [inputTopic, setInputTopic] = useState("AI Headlines");
 
-  const handleGetHeadlines = () => {
+  // Display state
+  const [date, setDate] = useState(today);
+  const [topic, setTopic] = useState("AI Headlines");
+  const [numHeadlines, setNumHeadlines] = useState(5);
+
+  // Function to handle regenerating articles using the select-articles endpoint
+  const handleRegenerateArticles = async () => {
     if (!inputDate || inputNumHeadlines <= 0) {
       return;
     }
 
-    // Update states only when "Get Headlines" is pressed
+    setIsLoading(true);
+    setError(null);
+
+    // Update states when regenerate is pressed
     setDate(inputDate);
     setNumHeadlines(inputNumHeadlines);
     setTopic(inputTopic);
+
+    try {
+      console.log('Regenerating articles with date restrictions...');
+      console.log(`Using parameters - start_date: ${inputDate}, end_date: ${inputEndDate}, num_headlines: ${inputNumHeadlines}`);
+      
+      // Send parameters in the request body as JSON instead of in the URL
+      const response = await fetch('http://localhost:5000/api/select-articles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          start_date: inputDate,
+          end_date: inputEndDate,
+          num_headlines: inputNumHeadlines
+        }),
+        credentials: 'include',
+        mode: 'cors'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to regenerate articles: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Now get the updated articles with HTML content
+      console.log('Getting headlines with same date parameters...');
+      const headlinesResponse = await fetch('http://localhost:5000/api/senior-housing/headlines', {
+        method: 'POST', // Changed to POST to send data in body
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          start_date: inputDate,
+          end_date: inputEndDate,
+          num_headlines: inputNumHeadlines
+        }),
+        credentials: 'include',
+        mode: 'cors'
+      });
+
+      if (!headlinesResponse.ok) {
+        throw new Error(`Failed to fetch headlines: ${headlinesResponse.statusText}`);
+      }
+
+      const headlinesResult = await headlinesResponse.json();
+      if (headlinesResult.error) {
+        throw new Error(headlinesResult.error);
+      }
+
+      setData({
+        articles: headlinesResult.articles.map((article: any) => ({
+          title: article.title,
+          url: article.url,
+          author: article.author,
+          publicationDate: new Date(article.publication_date).toLocaleDateString(),
+        })),
+        htmlContent: headlinesResult.html_content
+      });
+
+      setHeadlines(headlinesResult.articles.map((article: any) => article.title));
+      setHtmlContent(headlinesResult.html_content);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      console.error('Error regenerating articles:', error);
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGetHeadlines = async (regenerate: boolean = false) => {
+    if (!inputDate || inputNumHeadlines <= 0) {
+      return;
+    }
+
+    // If regenerate is true, use the dedicated regenerate function
+    if (regenerate && inputTopic === "Senior Housing News") {
+      return handleRegenerateArticles();
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    // Update states when "Get Headlines" is pressed
+    setDate(inputDate);
+    setNumHeadlines(inputNumHeadlines);
+    setTopic(inputTopic);
+
 
     switch (inputTopic) {
       case "AI Headlines": {
@@ -49,15 +153,67 @@ const App: React.FC = () => {
           updateHtmlContent(fetchedHeadlines);
         })
         break;
+        }
+
+        case "Senior Housing News": {
+          console.log('Fetching from backend...');
+          console.log(`Using parameters - start_date: ${inputDate}, end_date: ${inputEndDate}, num_headlines: ${inputNumHeadlines}`);
+          
+          // Send parameters in the request body as JSON
+          const response = await fetch('http://localhost:5000/api/senior-housing/headlines', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+              start_date: inputDate,
+              end_date: inputEndDate,
+              num_headlines: inputNumHeadlines
+            }),
+            credentials: 'include',
+            mode: 'cors'
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch headlines: ${response.statusText}`);
+          }
+
+          const result = await response.json();
+          if (result.error) {
+            throw new Error(result.error);
+          }
+
+          setData({
+            articles: result.articles.map((article: any) => ({
+              title: article.title,
+              url: article.url,
+              author: article.author,
+              publicationDate: new Date(article.publication_date).toLocaleDateString(),
+            })),
+            htmlContent: result.html_content
+          });
+
+          setHeadlines(result.articles.map((article: any) => article.title));
+          setHtmlContent(result.html_content);
+          break;
+        }
+
+        case "For-Sale Listings":
+          // TODO(harris): get top {numHeadlines} headlines on day {date}
+          break;
+
+        default:
+          throw new Error(`Unsupported topic: ${inputTopic}`);
       }
-      case "Senior Housing News":
-        // TODO(tyler): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
-        break;
-      case "For-Sale Listings":
-        // TODO(harris): get top {numHeadlines} headlines on day {date} as an array and setHeadlines(your array of headlines)
-        break;
-      default:
-        break;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      console.error('Error fetching headlines:', error);
+      setError(errorMessage);
+      setData(null);
+      setHeadlines([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -119,7 +275,7 @@ const App: React.FC = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100%' }}>
       <img src={zNestLogo} alt="Znest Logo" style={{ marginBottom: '20px', width: '150px' }} />
-      <div className="centered-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px' }}>
+      <div className="centered-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px', maxWidth: '800px', width: '90%' }}>
         
         {/* Inputs, Topic Dropdown, and Get Headlines Button in one line */}
         <div style={{ 

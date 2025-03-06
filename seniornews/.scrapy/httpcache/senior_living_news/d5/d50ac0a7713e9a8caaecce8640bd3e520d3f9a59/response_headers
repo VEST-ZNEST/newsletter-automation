@@ -1,0 +1,19 @@
+Date: Thu, 06 Mar 2025 07:41:38 GMT
+Content-Type: text/plain; charset=utf-8
+Cf-Ray: 91c036373c142b78-LAX
+Cf-Cache-Status: DYNAMIC
+Link: <https://www.seniorlivingnews.com/wp-json/>; rel="https://api.w.org/"
+Vary: Accept-Encoding
+Ki-Cache-Type: None
+Ki-Cf-Cache-Status: BYPASS
+Ki-Edge: v=20.3.2;mv=3.3.5
+X-Content-Type-Options: nosniff
+X-Edge-Location-Klb: 1
+X-Kinsta-Cache: HIT
+X-Robots-Tag: noindex, follow
+Set-Cookie: __cf_bm=ov8DwE850F.nPFBWdp.aBo1O1MAP7hGNcdC5rqDu9Bo-1741246898-1.0.1.1-IpWpdxSka1.StPWNvScosLDQeo1V_uQrPXY.d3wYkYdxh92ZfiE9CnBoO8.6JxqK5tJiYW_d8OE16hJHISHXrizRvkcMU3EDm90xr09aGy8; path=/; expires=Thu, 06-Mar-25 08:11:38 GMT; domain=.www.seniorlivingnews.com; HttpOnly; Secure; SameSite=None
+Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=Jt2cknbhzlVnfCJOBq6%2BL3ZFGJ4l8i20SZiA9FLsixeFqNy6xKbAEMAPEHWokYEanRiE1xzSSCIEuCFNar603lZHf4mWnynvoU4VOvOuSr6tFXpmWctX1ezfKNL8r5DyUAqB8I1siQMqxg%3D%3D"}],"group":"cf-nel","max_age":604800}
+Nel: {"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}
+Server: cloudflare
+Content-Encoding: gzip
+Alt-Svc: h3=":443"; ma=86400

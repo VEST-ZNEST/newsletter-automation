@@ -1,0 +1,9 @@
+Content-Length: 0
+Date: Thu, 06 Mar 2025 07:37:40 GMT
+Content-Type: text/plain;charset=UTF-8
+Location: https://accounts.haymarketmedia.com/authcheck?gn=106&retUrl=https%3A%2F%2Fwww.mcknightsseniorliving.com%2F&NoCheck=true
+Set-Cookie: hmSsoCheck=true; path=/; SameSite=None; Secure
+Set-Cookie: __cf_bm=6oXYoZBdYgzamR1V9OqW5Z..h1WGC680KZshr78Wnlo-1741246660-1.0.1.1-SoWBjOsuk5uNS4b8mat8Fv3b4KxwhjaPR8NcJ6HuHm38412eVSaXF1qjusnXO7mc1FtAETa90ZyRrGiEQchvnAqpINlvuRhrqn9XCof3Bpw; path=/; expires=Thu, 06-Mar-25 08:07:40 GMT; domain=.mcknightsseniorliving.com; HttpOnly; Secure; SameSite=None
+Vary: Accept-Encoding
+Server: cloudflare
+Cf-Ray: 91c0306a5af7ce68-SJC

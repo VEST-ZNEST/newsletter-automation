@@ -14,8 +14,10 @@ class SeniorNewsItem(scrapy.Item):
         author: The author of the article
         publication_date: When the article was published
         url: The source URL of the article
+        content: The main content/body of the article
     """
     title = scrapy.Field()
     author = scrapy.Field()
     publication_date = scrapy.Field()
     url = scrapy.Field()
+    content = scrapy.Field()
