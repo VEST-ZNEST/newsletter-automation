@@ -4,10 +4,10 @@ import zNestLogo from './assets/znest-logo.png'; // Adjust the path as necessary
 import axios from 'axios';
 
 // Base API URL - change this when deploying
-const BASE_API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-backend-name.onrender.com' // Replace with your actual Render backend URL when deployed
-  : 'http://localhost:5000';
-
+//const BASE_API_URL = process.env.NODE_ENV === 'production' 
+  //? 'https://newsletter-automation.onrender.com' // Replace with your actual Render backend URL when deployed
+  //: 'http://localhost:5000';
+const BASE_API_URL = 'https://newsletter-automation.onrender.com';
 // Define interfaces for type safety
 interface Article {
   title: string;
@@ -187,7 +187,7 @@ const App: React.FC = () => {
         console.log(`Using parameters - start_date: ${inputDate}, end_date: ${inputEndDate}, num_headlines: ${inputNumHeadlines}`);
         
         // Send parameters in the request body as JSON
-        fetch('http://localhost:5000/api/senior-housing/headlines', {
+        fetch(`${BASE_API_URL}/api/senior-housing/headlines`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
