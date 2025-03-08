@@ -27,8 +27,9 @@ const App: React.FC = () => {
 
   // State variables
   const [data, setData] = useState<NewsData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Using underscore prefix to indicate these variables are defined but intentionally unused
+  const [_isLoading, setIsLoading] = useState(false);
+  const [_error, setError] = useState<string | null>(null);
   const [headlines, setHeadlines] = useState<string[]>([]);
   const [htmlContent, setHtmlContent] = useState('');
 
@@ -41,7 +42,7 @@ const App: React.FC = () => {
   // Display state
   const [date, setDate] = useState(today);
   const [topic, setTopic] = useState("AI Headlines");
-  const [numHeadlines, setNumHeadlines] = useState(5);
+  const [_numHeadlines, setNumHeadlines] = useState(5); // Using underscore prefix for unused variable
 
   // Function to handle regenerating articles using the select-articles endpoint
   const handleRegenerateArticles = async () => {
@@ -402,7 +403,7 @@ const App: React.FC = () => {
               marginTop: '20px',
               padding: '5px 10px'
             }} 
-            onClick={(e) => handleGetHeadlines()}
+            onClick={() => handleGetHeadlines()}
           >
             Get Headlines
           </button>
