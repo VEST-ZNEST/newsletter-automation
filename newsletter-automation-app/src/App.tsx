@@ -287,6 +287,12 @@ const App: React.FC = () => {
         )
         .join('\n    ')}\n  </ul>\n</div>`;
       setHtmlContent(content);
+    } else if (topic === "AI Headlines") {
+      // For AI Headlines, the headlines are already HTML with links
+      const content = `<div>\n<ul>\n    ${headlinesList.map(h => 
+        `<li style="text-align: left;">${h}</li>`
+      ).join('\n    ')}\n  </ul>\n</div>`;
+      setHtmlContent(content);
     } else {
       // For other topics, just use the headlines as plain text
       const content = `<div>\n<ul>\n    ${headlinesList.map(h => 
@@ -441,7 +447,10 @@ const App: React.FC = () => {
                               {headline}
                             </a>
                           ) : headline
-                        ) : headline}
+                        ) : (
+                          // For AI Headlines, parse the HTML to extract the link and title
+                          <span dangerouslySetInnerHTML={{ __html: headline }} />
+                        )}
                       </span>
                       <button 
                         onClick={() => handleDeleteHeadline(index)}
