@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from app import db
 from app.models import Article
 from app.services import scrape_articles, select_top_articles, send_newsletter, format_articles_html
+from app.fetch_ai_news import fetch_ai_news_with_params, format_article
 
 bp = Blueprint('main', __name__)
 
@@ -255,4 +256,40 @@ def get_senior_housing_headlines():
         
     except Exception as e:
         print(f'Error in get_senior_housing_headlines: {str(e)}')
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/ai-news', methods=['GET'])
+def get_ai_news():
+    """Get AI news articles filtered by date range"""
+    try:
+        # Get query parameters for the date range and number of headlines
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        num_headlines = request.args.get('num_headlines', 5)
+        
+        try:
+            num_headlines = int(num_headlines)
+        except ValueError:
+            num_headlines = 5
+            
+        # Log what we found
+        print(f"AI News parameters - date_from: {date_from!r}, date_to: {date_to!r}, num_headlines: {num_headlines!r}")
+        
+        # Fetch AI news articles
+        articles = fetch_ai_news_with_params(date_from, date_to, num_headlines)
+        
+        # Format each article
+        headlines = [format_article(article) for article in articles]
+        
+        # Create HTML content
+        html_content = ''
+        for headline in headlines:
+            html_content += f'{headline}<br>'
+        
+        return jsonify({
+            'headlines': headlines,
+            'html_content': html_content
+        })
+    except Exception as e:
+        print(f'Error in get_ai_news: {str(e)}')
         return jsonify({'error': str(e)}), 500

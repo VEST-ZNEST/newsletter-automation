@@ -3,6 +3,11 @@ import './App.css';
 import zNestLogo from './assets/znest-logo.png'; // Adjust the path as necessary
 import axios from 'axios';
 
+// Base API URL - change this when deploying
+const BASE_API_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-backend-name.onrender.com' // Replace with your actual Render backend URL when deployed
+  : 'http://localhost:5000';
+
 // Define interfaces for type safety
 interface Article {
   title: string;
@@ -57,7 +62,7 @@ const App: React.FC = () => {
       console.log(`Using parameters - start_date: ${inputDate}, end_date: ${inputEndDate}, num_headlines: ${inputNumHeadlines}`);
       
       // Send parameters in the request body as JSON instead of in the URL
-      const response = await fetch('http://localhost:5000/api/select-articles', {
+      const response = await fetch(`${BASE_API_URL}/api/select-articles`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +88,7 @@ const App: React.FC = () => {
 
       // Now get the updated articles with HTML content
       console.log('Getting headlines with same date parameters...');
-      const headlinesResponse = await fetch('http://localhost:5000/api/senior-housing/headlines', {
+      const headlinesResponse = await fetch(`${BASE_API_URL}/api/senior-housing/headlines`, {
         method: 'POST', // Changed to POST to send data in body
         headers: {
           'Content-Type': 'application/json',
@@ -149,7 +154,7 @@ const App: React.FC = () => {
     switch (inputTopic) {
       case "AI Headlines": {
         axios
-          .get("http://localhost:5001/api/ai-news", {
+          .get(`${BASE_API_URL}/api/ai-news`, {
             params: {
               date_from: inputDate,       
               date_to: inputEndDate,            
@@ -231,12 +236,13 @@ const App: React.FC = () => {
         });
         break;
       }
-
+      /* 
       case "For-Sale Listings":
         // TODO(harris): get top {numHeadlines} headlines on day {date}
         setIsLoading(false);
         break;
 
+      */
       default:
         console.error(`Unsupported topic: ${inputTopic}`);
         setError(`Unsupported topic: ${inputTopic}`);
@@ -387,7 +393,6 @@ const App: React.FC = () => {
             >
               <option value="AI Headlines">AI Headlines</option>
               <option value="Senior Housing News">Senior Housing News</option>
-              <option value="For-Sale Listings">For-Sale Listings</option>
             </select>
           </div>
 

@@ -1,4 +1,4 @@
-Date: Thu, 06 Mar 2025 08:38:03 GMT
+Date: Fri, 07 Mar 2025 21:16:50 GMT
 Content-Type: text/html; charset=UTF-8
 Vary: Accept-Encoding
 Vary: Accept-Encoding
@@ -9,10 +9,10 @@ Link: <https://seniorhousingnews.com/wp-json/wp/v2/posts/50112>; rel="alternate"
 Link: <https://wp.me/p9XMo-d2g>; rel=shortlink
 X-Cacheable: bot
 Cache-Control: max-age=10800, must-revalidate
-X-Cache: HIT: 1
+X-Cache: MISS
 X-Cache-Group: bot
 Cf-Cache-Status: DYNAMIC
 Server: cloudflare
-Cf-Ray: 91c088deca4d78d7-LAX
+Cf-Ray: 91cd1dbddbbe2b55-LAX
 Content-Encoding: gzip
 Alt-Svc: h3=":443"; ma=86400
