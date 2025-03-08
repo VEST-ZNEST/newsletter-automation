@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -10,6 +11,10 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    
+    # Log important configuration for debugging
+    app.logger.info(f"Starting application with DATABASE_URL: {app.config.get('SQLALCHEMY_DATABASE_URI')[:20]}...")
+    app.logger.info(f"NEWSAPI_KEY configured: {'Yes' if os.environ.get('NEWSAPI_KEY') else 'No'}")
 
     # Enable CORS for development with full access
     CORS(app, resources={
