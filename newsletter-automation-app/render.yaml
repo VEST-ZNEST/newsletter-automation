@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: newsletter-frontend
+    env: static
+    buildCommand: |
+      curl -fsSL https://get.pnpm.io/install.sh | sh -
+      export PNPM_HOME="/root/.local/share/pnpm"
+      export PATH="$PNPM_HOME:$PATH"
+      pnpm install
+      pnpm build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 18.12.0
